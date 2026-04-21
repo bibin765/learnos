@@ -12,7 +12,7 @@ If it isn't in git, it didn't happen.
 
 | Topic | Status | Started | Target End | Week | Feynman Pass? |
 | --- | --- | --- | --- | --- | --- |
-| _(none yet — run `python scripts/new_topic.py <topic>`)_ | — | — | — | — | — |
+| [world-war-2](roadmaps/world-war-2/roadmap.md) | 🟢 Active | 2026-04-22 | 2026-05-20 | 1 | ☐ |
 
 **Status legend:** 🟢 Active · ⏸ Paused · ✅ Shipped · 🗄 Archived
 
