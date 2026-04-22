@@ -1,0 +1,346 @@
+{
+  "topic": "World War 2",
+  "slug": "world-war-2",
+  "generatedAt": "2026-04-22T00:00:00Z",
+  "preamble": "WW2 is the 20th century's hinge — not because it was the biggest war (it was), but because every institution, boundary, and technology you touch today was shaped by how it ended. To understand the present, you trace the causal chain backward through 1945.",
+  "chapters": [
+    {
+      "id": "origins",
+      "title": "Origins: why a second war was already loaded into the first",
+      "description": "The 1919–1939 gap is where the war was actually lost — before it began."
+    },
+    {
+      "id": "the-war",
+      "title": "The war itself: theatres, turning points, technology",
+      "description": "Logistics and industry decided outcomes; tactics got the credit."
+    },
+    {
+      "id": "ethics",
+      "title": "The Holocaust and the ethics of total war",
+      "description": "How a modern industrial state organized genocide, and which Allied decisions remain contested."
+    },
+    {
+      "id": "aftermath",
+      "title": "Aftermath: the world the war actually made",
+      "description": "The institutions, borders, and technologies we still live inside."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "versailles-reparations",
+      "title": "Versailles reparations & the War Guilt clause",
+      "chapter": "origins",
+      "prerequisites": [],
+      "story": {
+        "knot": "It's June 1919, six months after the guns stopped. 20 million are dead. The French want to bill Germany for everything — the French government is broke, their northern provinces flattened, a generation of young men in the ground. But how do you bill an economy that can't pay? If reparations crash the German currency, Germany can't buy French exports. If they don't crash it, the French electorate revolts. In the room: Clemenceau wants security, Wilson wants a League of Nations, Lloyd George wants a balance. What emerges — Article 231, the 'War Guilt clause', plus 132 billion gold marks — is a compromise nobody believes in.",
+        "move": "John Maynard Keynes, then a young Treasury economist in the British delegation, walks out in protest and writes *The Economic Consequences of the Peace* in three months. His argument isn't moral — it's mechanical. Reparations are paid in real goods and services, not symbols. Extracting them requires Germany to run a vast trade surplus, which requires the Allies to run the matching deficit, which they refuse to allow. Keynes predicts the treaty will fail on its own arithmetic. It does: the 1923 Ruhr occupation, Weimar hyperinflation, and the revisionist politics of the 1930s all flow from this miscalibration.",
+        "handle": "Versailles didn't cause WW2; it structured the space of grievances from which WW2 could be assembled. Structural humiliation + economic brittleness is the precondition, not the trigger."
+      },
+      "sources": [
+        { "ref": "John Maynard Keynes, *The Economic Consequences of the Peace* (1919), chapters 3 and 6", "kind": "book" },
+        { "ref": "Treaty of Versailles, Article 231 and Part VIII (reparations)", "kind": "doc" }
+      ],
+      "feynman": "Why is 'Versailles caused WW2' the pop version of a more precise claim about structural fragility?",
+      "build": "A one-paragraph explanation of the Keynes argument that doesn't use the words 'harsh' or 'unfair'.",
+      "traps": [
+        "Treating reparations as a moral argument rather than a mechanical one",
+        "Assuming the treaty was unusually harsh — it was actually milder than what Germany had imposed on Russia in 1918"
+      ]
+    },
+    {
+      "id": "weimar-economic-collapse",
+      "title": "Weimar hyperinflation and the 1929 depression",
+      "chapter": "origins",
+      "prerequisites": ["versailles-reparations"],
+      "story": {
+        "knot": "By January 1923, one US dollar buys 17,000 marks. By November, 4.2 trillion. Wheelbarrows of currency buy a loaf of bread. A lifetime of middle-class savings evaporates in eighteen months. Then, six years after the currency stabilizes, the 1929 crash destroys savings again — pensions, deposits, the comfortable assumption that work plus thrift equals security. The middle class has now watched its prudent choices become worthless twice in a decade.",
+        "move": "Adam Tooze traces the politics through the numbers: hyperinflation was partly a deliberate German policy to sabotage reparations, and it worked — but at the cost of shattering the class that was the backbone of democratic Weimar. When 1929 hits the same class a second time, the Nazi vote jumps from 2.6% (1928) to 18.3% (1930) to 37.3% (July 1932). Hitler doesn't seduce a prosperous nation — he is *chosen* by a middle class that has twice concluded the system cannot protect them. The mechanism is economic trauma plus the absence of credible alternatives, not ideological enthusiasm.",
+        "handle": "Democracies fail when their median voter stops believing the rules reward prudence. It takes two economic betrayals, not one."
+      },
+      "sources": [
+        { "ref": "Adam Tooze, *The Wages of Destruction: The Making and Breaking of the Nazi Economy* (2006), chapter 1", "kind": "book" },
+        { "ref": "Reichstag election results, 1928–1933 (primary data)", "kind": "doc" }
+      ],
+      "feynman": "If Hitler's rise was driven by economic trauma, why didn't comparable traumas in other 1930s democracies produce equivalent movements?",
+      "traps": [
+        "Reading Nazi rise as ideological persuasion rather than as structural opportunity",
+        "Treating hyperinflation and the Depression as separate shocks when the political story is about their compounding"
+      ]
+    },
+    {
+      "id": "failed-collective-security",
+      "title": "The League of Nations — a machine without an engine",
+      "chapter": "origins",
+      "prerequisites": [],
+      "story": {
+        "knot": "Woodrow Wilson's Fourteen Points promised a permanent peace through collective security — any aggressor would face the combined force of all nations. Article 10 of the League Covenant committed every member to 'preserve against external aggression the territorial integrity and existing political independence of all members.' On paper, Article 16 could impose economic and military sanctions. In practice: Japan invades Manchuria (1931), the League condemns, nothing happens. Italy invades Ethiopia (1935), the League imposes partial sanctions that exclude oil, Italy wins. Germany reoccupies the Rhineland (1936), the League says nothing.",
+        "move": "The machine was real; the engine was missing. Collective security requires one of two things: a hegemon willing to enforce it, or a credible commitment by multiple powers to act *despite* short-term national interest. The US Senate rejected League membership in 1920, removing the only possible hegemon. Britain and France — exhausted by WWI and nursing depression-era economies — could credibly act against a weaker power (Italy) but not against a peer (Germany). Every aggressor learned the same lesson: the League was a diplomatic forum pretending to be a security system.",
+        "handle": "Institutions without enforcement are stories institutions tell themselves. Aggressors learn to read the gap between the text and the will."
+      },
+      "sources": [
+        { "ref": "Covenant of the League of Nations (1919), Articles 10 and 16", "kind": "doc" },
+        { "ref": "Lytton Report on Manchuria (1932), conclusions", "kind": "doc" },
+        { "ref": "Zara Steiner, *The Lights that Failed: European International History 1919–1933* (2005), chapters 7–9", "kind": "book" }
+      ],
+      "feynman": "What's the minimum condition under which a collective-security system can actually deter aggression?",
+      "traps": [
+        "Blaming 'isolationism' as if it were a moral failing rather than a rational response to absent commitments",
+        "Assuming the UN fixed this — it didn't, it just baked the Security Council veto in to stop pretending"
+      ]
+    },
+    {
+      "id": "munich-appeasement",
+      "title": "Munich 1938 — a rational bet on bad information",
+      "chapter": "origins",
+      "prerequisites": ["failed-collective-security", "weimar-economic-collapse"],
+      "story": {
+        "knot": "September 1938: Hitler demands the Sudetenland. Chamberlain flies to Munich, returns with a signed paper and the phrase 'peace for our time'. The received wisdom: he was a coward, or a fool, or both. But in 1938, Britain had 29 fighter squadrons; it would have 47 by summer 1939, most equipped with Spitfires and Hurricanes instead of the biplanes they had in 1938. Radar chain coverage was incomplete. French intelligence was telling Paris the Wehrmacht could field 120 divisions (actual: 40). The Czechs had strong border fortifications and a good army — but no shared border with any Western ally who could reach them.",
+        "move": "Chamberlain's calculus wasn't moral; it was a trade of space for time. He believed — and his military advisors told him — that Britain and France would lose a 1938 war and likely win a 1939–40 one. He was substantially right about the timing: the Battle of Britain in 1940 was won with equipment Britain did not have in 1938. What he got wrong was Hitler's strategic ambition. Munich assumed Hitler wanted the Sudetenland; Hitler wanted the world. The misread was of intent, not capability.",
+        "handle": "Appeasement was a bet on the opponent's ceiling being lower than it was. The bet was rational under the information of the day. It was still wrong."
+      },
+      "sources": [
+        { "ref": "Neville Chamberlain, address to the House of Commons, 3 October 1938 (Hansard)", "kind": "doc" },
+        { "ref": "British Cabinet military assessments, August–September 1938 (UK National Archives, CAB series)", "kind": "doc" },
+        { "ref": "R. A. C. Parker, *Chamberlain and Appeasement* (1993), chapters 5–7", "kind": "book" }
+      ],
+      "feynman": "Explain Chamberlain's decision without using the words 'coward', 'naive', or 'foolish'.",
+      "traps": [
+        "Judging 1938 decisions with 1945 information",
+        "Treating 'appeasement' as a single coherent policy rather than a sequence of under-informed bets"
+      ]
+    },
+    {
+      "id": "three-theatres",
+      "title": "Three theatres, one war — three different logics",
+      "chapter": "the-war",
+      "prerequisites": ["munich-appeasement"],
+      "story": {
+        "knot": "Popular memory collapses WW2 into a single war — usually the Western Front with D-Day as its climax. But WW2 was three partly-linked wars with fundamentally different logics: a European continental war (Germany vs USSR + Western Allies), a Pacific maritime/air war (Japan vs US + Commonwealth), and a Chinese land war (Japan vs China) that had been running since 1937 and cost 15–20 million Chinese lives. The wars are connected — Pearl Harbor brings the US in, which reshapes both theatres — but the *shape* of combat, the decisive constraints, and the winning doctrines are different in each.",
+        "move": "Gerhard Weinberg's framing forces you to stop asking 'who won WW2?' and start asking 'who won *which* war, and how did the wars interact?'. The Eastern Front is an attritional land war decided by production and logistics. The Pacific is a carrier war decided by codebreaking, submarine blockade, and oil. The Chinese theatre is about political survival under occupation. The Axis loses not because they are beaten in one theatre but because they cannot reconcile the demands of all three simultaneously.",
+        "handle": "WW2 wasn't one war with three fronts. It was three wars with overlapping participants, each decided by different factors."
+      },
+      "sources": [
+        { "ref": "Gerhard Weinberg, *A World at Arms: A Global History of World War II* (1994), introduction and chapter 4", "kind": "book" }
+      ],
+      "feynman": "Which of the three theatres was least dependent on the other two, and what does that tell you about WW2's causal structure?",
+      "traps": [
+        "Centering D-Day as if it were the war's hinge — it mattered, but Kursk (July 1943) had already broken the Wehrmacht",
+        "Underweighting the Sino-Japanese war as a precursor — Japan was bleeding before Pearl Harbor"
+      ]
+    },
+    {
+      "id": "eastern-front-decisive",
+      "title": "The Eastern Front as the decisive theatre",
+      "chapter": "the-war",
+      "prerequisites": ["three-theatres"],
+      "story": {
+        "knot": "In the Anglo-American telling, the war against Germany is won on D-Day beaches and in the Ardennes. The numbers tell a different story. Of the 5.3 million German military dead, roughly 4 million die on the Eastern Front. Of 1,400 German divisions committed across all theatres, over two-thirds fight in the east. Soviet dead: 27 million, the highest absolute toll of any combatant. The Wehrmacht that the Western Allies meet in 1944 is the one the Red Army has already destroyed.",
+        "move": "Glantz and House, working with Soviet archives that opened after 1991, reconstruct the operational scale: Operation Bagration (June 1944) alone destroys Army Group Centre and inflicts ~400,000 German casualties — larger than any single Western front engagement. Kursk (July 1943) is the point after which the Wehrmacht never again mounts a strategic offensive in the east. D-Day is strategically significant for *political* reasons — it determines the shape of the postwar order — but the question of whether Germany loses was already answered.",
+        "handle": "D-Day decided who would occupy Berlin, not whether Berlin would fall."
+      },
+      "sources": [
+        { "ref": "David Glantz and Jonathan House, *When Titans Clashed: How the Red Army Stopped Hitler* (revised ed. 2015), chapters 2 and 11", "kind": "book" },
+        { "ref": "German casualty records, Bundesarchiv-Militärarchiv (for raw theatre breakdown)", "kind": "doc" }
+      ],
+      "feynman": "If D-Day had failed, does the war still end in Allied victory? Defend your answer.",
+      "traps": [
+        "Cold War-era Western historiography that systematically underweighted Soviet contribution",
+        "Conflating political importance (D-Day) with military decisiveness (Kursk/Bagration)"
+      ]
+    },
+    {
+      "id": "logistics-over-tactics",
+      "title": "Logistics and industry — the invisible decider",
+      "chapter": "the-war",
+      "prerequisites": ["three-theatres"],
+      "story": {
+        "knot": "Military history tends to reward tactical virtuosity: Guderian at Sedan, Rommel in North Africa, Yamamoto at Pearl Harbor. But these are the brightest moments in wars their sides lost. Why? The Axis never solves its industrial base problem. Germany's 1944 tank production finally hits parity with Soviet 1942 levels. Japan's merchant shipping tonnage drops from 6.1M tons (1941) to 1.5M (1945) under US submarine attack. Axis oil reserves are always two campaigns from catastrophe.",
+        "move": "Van Creveld's *Supplying War* reframes the question. Campaigns are won by armies that can keep their divisions fed, fueled, and shelled; lost by armies that can't. The Red Ball Express (trucks moving Allied supplies from Normandy to the front) delivers more logistical value than any battlefield victory. The U-boat tonnage war — Allies sink U-boats faster than Germany builds them, starting May 1943 — decides the Atlantic before any single Western battle. Japan's oil starvation means the IJN's best ships sit in port for lack of fuel. Industrial output + logistics capacity turn out to be the deepest layer of the causal stack; tactics operate inside the constraints they set.",
+        "handle": "Amateurs argue about tactics. Professionals argue about logistics. Historians argue about both."
+      },
+      "sources": [
+        { "ref": "Martin van Creveld, *Supplying War: Logistics from Wallenstein to Patton* (revised ed. 2004), chapter 6", "kind": "book" },
+        { "ref": "US Strategic Bombing Survey, *The Effects of Strategic Bombing on the German War Economy* (1945)", "kind": "doc" }
+      ],
+      "feynman": "Why did Germany, with superior tactical doctrine in 1939–41, lose to opponents with inferior tactics?",
+      "traps": [
+        "Over-indexing on tactical case studies (they're more narratively satisfying than production tables)",
+        "Ignoring how Lend-Lease reshaped Soviet logistics — trucks, locomotives, radios, boots, food"
+      ]
+    },
+    {
+      "id": "industrial-science",
+      "title": "Radar, codebreaking, and the Manhattan Project — industrial science as strategy",
+      "chapter": "the-war",
+      "prerequisites": ["logistics-over-tactics"],
+      "story": {
+        "knot": "Prewar assumption: wars are won by armies, navies, and the factories behind them. WW2 adds a fourth category no one quite anticipated — organized science as a strategic asset. Britain fields radar chains in 1940 that give RAF Fighter Command a ~5x efficiency multiplier. Bletchley Park's ULTRA decrypts reveal U-boat positions and compress the Battle of the Atlantic. The Manhattan Project, absorbing 0.4% of US GDP for four years, produces weapons that redefine the meaning of war.",
+        "move": "Hinsley's official history of British intelligence (and the later declassification of ULTRA in the 1970s) shows the pattern. Prewar, scientific R&D is an academic activity adjacent to the military; wartime, it is *directly integrated* into operational planning. Operations research — applied mathematics to military problems — becomes a recognized discipline. The organizational insight that survives: deliberate, well-funded, operationally-connected scientific R&D produces step-changes in military capability. Postwar, this becomes the template for DARPA, the national labs, the entire military-industrial-scientific complex.",
+        "handle": "WW2 invented the idea that science itself is a weapon. The infrastructure we still live in — from DARPA to NASA to the modern research university — is its residue."
+      },
+      "sources": [
+        { "ref": "F. H. Hinsley et al., *British Intelligence in the Second World War* (abridged ed. 1993), chapter 1", "kind": "book" },
+        { "ref": "Richard Rhodes, *The Making of the Atomic Bomb* (1986), chapters 19–22", "kind": "book" },
+        { "ref": "Vannevar Bush, *Science — The Endless Frontier* (1945)", "kind": "doc" }
+      ],
+      "feynman": "What distinguishes prewar government science from wartime organized R&D? What changed, exactly?",
+      "traps": [
+        "Reading the Manhattan Project in isolation — radar and ULTRA mattered more, day-to-day",
+        "Assuming technology alone wins wars (Germany had jet aircraft and rockets, and lost)"
+      ]
+    },
+    {
+      "id": "path-to-extermination",
+      "title": "From persecution to industrial extermination",
+      "chapter": "ethics",
+      "prerequisites": ["weimar-economic-collapse"],
+      "story": {
+        "knot": "The Holocaust is frequently taught as a product of Nazi ideology alone — you know the worldview, you predict the outcome. This elides something important: for years, the Nazi state's stated goal was Jewish *removal*, not extermination. Policies cycled through emigration schemes, ghettoization, and transfer plans. The shift to industrialized mass murder happens somewhere between 1941 and early 1942, and the mechanism of that shift is not purely ideological.",
+        "move": "The Wannsee Conference (January 1942) is the bureaucratic hinge — not the origin of genocide, but the moment its administrative structure is ratified. By then, Einsatzgruppen killings in the occupied USSR have already run for six months; Wannsee coordinates what is already underway. Browning's reconstruction (*The Origins of the Final Solution*) shows how ideological commitment, bureaucratic momentum, wartime radicalization, and perceived logistical necessity compound into the decision for death camps. The mechanism matters because it reveals patterns — obedience to authority, dehumanizing language, technological amplification, organizational diffusion of responsibility — that are not specific to one regime.",
+        "handle": "Industrial genocide required ideology AND bureaucracy AND war conditions. Each alone produces persecution; the compound produces death camps."
+      },
+      "sources": [
+        { "ref": "Wannsee Conference Protocol (20 January 1942), translated edition", "kind": "doc" },
+        { "ref": "Christopher Browning, *The Origins of the Final Solution: The Evolution of Nazi Jewish Policy, September 1939 – March 1942* (2004), chapters 8–12", "kind": "book" },
+        { "ref": "Christopher Browning, *Ordinary Men: Reserve Police Battalion 101 and the Final Solution in Poland* (1992)", "kind": "book" }
+      ],
+      "feynman": "Explain industrialized genocide to a smart 14-year-old without reducing it to 'Nazis were evil'. What mechanisms — bureaucratic, technological, social — made it possible?",
+      "build": "A 600-word essay: 'What would it take for a comparably-organized genocide to be impossible in the country I live in today?'",
+      "traps": [
+        "Framing the Holocaust as uniquely German, which obscures the recurring pattern of bureaucratic-technological-ideological compounding",
+        "Retrofitting knowledge — Allied leaders did not have clear intelligence of the death camps before 1944"
+      ]
+    },
+    {
+      "id": "bombing-and-atomic-decisions",
+      "title": "Bombing campaigns and the atomic decision — contested ethics",
+      "chapter": "ethics",
+      "prerequisites": ["industrial-science", "logistics-over-tactics"],
+      "story": {
+        "knot": "Two categories of Allied decision remain genuinely contested in the serious historical literature: the strategic bombing of German and Japanese cities (Dresden, Hamburg, Tokyo firebombing killed ~100,000 in a single night), and the atomic bombings of Hiroshima and Nagasaki. Both were carried out by the side that 'won the moral argument'. Both killed civilians at a scale that is hard to reconcile with the legal and ethical categories in use before 1945.",
+        "move": "Grayling's *Among the Dead Cities* works through the bombing arguments without moralizing. The strategic case: crushing civilian morale was believed to hasten German defeat; the belief turned out to be largely wrong — morale doesn't collapse, industry mostly doesn't either. The Hiroshima decision is read best alongside the Franck Report (June 1945), which argued inside the Manhattan Project for a demonstration drop. Truman's diary (25 July 1945) shows his reasoning: save American lives, end the war before Soviet entry, signal to Stalin. Each of these factors is defensible individually; the composite decision, under the information of the moment, is still contestable. The ethical work is reconstructing what leaders knew, when, and why, not scorekeeping.",
+        "handle": "The hardest cases sit inside the winner's story. You can critique Allied decisions without false equivalence; that's the moral discipline."
+      },
+      "sources": [
+        { "ref": "A. C. Grayling, *Among the Dead Cities* (2006), chapter 4", "kind": "book" },
+        { "ref": "Harry Truman, diary entries for 25 July and 6 August 1945 (Truman Library)", "kind": "doc" },
+        { "ref": "Franck Report (June 1945)", "kind": "doc" },
+        { "ref": "Richard Overy, *The Bombing War: Europe 1939–1945* (2013), chapter 1", "kind": "book" }
+      ],
+      "feynman": "Which single Allied wartime decision do you find most ethically contested, and what information would you have needed at the time to decide differently?",
+      "build": "An 800-word essay on that decision, showing both the case for it and the case against under contemporary information.",
+      "traps": [
+        "Retroactive certainty — it's 2026, you know how it ended",
+        "Reducing ethics to scorekeeping rather than reconstructing the decision under uncertainty"
+      ]
+    },
+    {
+      "id": "bretton-woods",
+      "title": "Bretton Woods and the dollar system",
+      "chapter": "aftermath",
+      "prerequisites": ["versailles-reparations"],
+      "story": {
+        "knot": "July 1944. The war isn't over, but the Allies are winning, and 730 delegates from 44 nations assemble at a hotel in New Hampshire to design the postwar economic order. The 1920s-30s memory is vivid: currency devaluations, trade wars, the failure of the gold standard. Everyone wants stability. But two visions collide. Keynes — still alive, now the British lead negotiator — wants a truly international currency (he calls it 'bancor') and a creditor-adjustment mechanism. Harry Dexter White, the US Treasury lead, wants the dollar at the center.",
+        "move": "Steil's reconstruction shows White winning every substantive argument, because the US holds two-thirds of the world's gold and owns the printing press. The outcome: the IMF, the World Bank, fixed exchange rates against the dollar, and the dollar itself pegged to gold at $35/oz. This is not an abstract design choice. It means the US gets what Valéry Giscard d'Estaing later calls 'exorbitant privilege' — the ability to run deficits that would sink any other currency. Even after Nixon closes the gold window in 1971, the dollar remains the reserve currency. Every time a country stores reserves in dollars, or prices oil in dollars, or settles trade in dollars, it's still running on Bretton Woods infrastructure.",
+        "handle": "The dollar is still the world's reserve currency because in July 1944, America won the argument about how to avoid the 1930s."
+      },
+      "sources": [
+        { "ref": "Benn Steil, *The Battle of Bretton Woods: John Maynard Keynes, Harry Dexter White, and the Making of a New World Order* (2013), chapters 7–8", "kind": "book" },
+        { "ref": "Articles of Agreement of the IMF (1944)", "kind": "doc" }
+      ],
+      "feynman": "Why is 'the dollar is the reserve currency' a WW2 outcome rather than a natural consequence of US economic size?",
+      "traps": [
+        "Assuming the US position was inevitable — it was contingent on war finance and creditor position",
+        "Ignoring that the 1971 collapse of the gold peg is part of the same system, not its end"
+      ]
+    },
+    {
+      "id": "security-architecture",
+      "title": "The UN, NATO, and the security architecture",
+      "chapter": "aftermath",
+      "prerequisites": ["failed-collective-security"],
+      "story": {
+        "knot": "Coming out of WW2, the Allied powers face the same design problem the Versailles generation faced: how do you prevent great-power war? The League of Nations (previous node) had failed because collective security requires enforcement, and no one was willing to provide it. The postwar architects must build a system that fails better.",
+        "move": "The UN Charter (1945) encodes the hard-learned lesson. Articles 1 and 2 state the ideals — sovereign equality, prohibition on use of force. Article 51 preserves the right of self-defense, individually or collectively. But the real innovation is the Security Council: five permanent members (US, USSR, UK, France, China) with a veto. This looks like a flaw — it's actually the *design*. Collective security only works if great powers are bound in; making the system require their consent for major action ensures they remain engaged rather than walking out as the US did from the League. NATO (1949) layers on top: a specifically Western alliance that sidesteps Soviet obstruction for the actual military commitment. The pattern repeats — any institutional security order that works is built around the powers that could otherwise destroy it.",
+        "handle": "The UN isn't designed to stop great powers from fighting. It's designed to make sure they stay in the room."
+      },
+      "sources": [
+        { "ref": "Charter of the United Nations (1945), Articles 1, 2, and 51", "kind": "doc" },
+        { "ref": "North Atlantic Treaty (1949)", "kind": "doc" },
+        { "ref": "Mazower, *Governing the World: The History of an Idea* (2012), chapters 8–10", "kind": "book" }
+      ],
+      "feynman": "Why did the UN design a Security Council veto — a feature that seems like a bug if you want collective security to work?",
+      "traps": [
+        "Treating the UN as a world government manqué — it was never designed to be one",
+        "Comparing the UN to the League without recognizing the Security Council as an engineering response to exactly that failure"
+      ]
+    },
+    {
+      "id": "decolonization",
+      "title": "Decolonization as a WW2 side-effect",
+      "chapter": "aftermath",
+      "prerequisites": ["logistics-over-tactics"],
+      "story": {
+        "knot": "The European empires enter WW2 still vast — the British Empire alone covers a quarter of the world's land surface. By 1960, most of those empires are gone. Standard telling: anticolonial movements rose, European will collapsed. Why *then*, specifically?",
+        "move": "WW2 hollowed out the material basis of European empire in two ways. Economically, Britain and France emerge broke — Britain is paying down its lend-lease debt into the 1950s; France can't afford Indochina. Militarily, Japan's 1941-42 sweep through British Malaya, Singapore, and the Dutch East Indies proves the colonial powers are no longer invulnerable; the mystique that underwrote colonial rule, never sturdy, shatters. Meanwhile, Wilson and then Roosevelt had explicitly tied the war to self-determination rhetoric. India (1947), Indonesia (1949), Vietnam's declaration (1945) all flow from this new arithmetic: the colonized are no longer afraid of the colonizers, and the colonizers can no longer afford to reimpose themselves.",
+        "handle": "European empires didn't end because morality won. They ended because bankruptcy plus demystification destroyed the cost-benefit equation."
+      },
+      "sources": [
+        { "ref": "John Darwin, *After Tamerlane: The Global History of Empire Since 1405* (2007), chapters 10–11", "kind": "book" },
+        { "ref": "Atlantic Charter (August 1941), joint Roosevelt-Churchill declaration", "kind": "doc" }
+      ],
+      "feynman": "Why did decolonization accelerate after 1945 specifically, rather than, say, after 1918?",
+      "traps": [
+        "Reading decolonization as purely a moral triumph rather than also a fiscal and military consequence",
+        "Assuming the same process everywhere — the Indian, Algerian, and Vietnamese cases differ significantly"
+      ]
+    },
+    {
+      "id": "cold-war-continuation",
+      "title": "The Cold War as WW2's unfinished business",
+      "chapter": "aftermath",
+      "prerequisites": ["eastern-front-decisive", "security-architecture"],
+      "story": {
+        "knot": "VE Day is celebrated as a clean ending. But VE Day was May 1945, and by February of that year at Yalta, the wartime alliance had already become a partition negotiation. Roosevelt, Churchill, Stalin sat in a Crimean palace and sketched out spheres of influence — Soviet troops were already in Eastern Europe; Western troops were in the West; the question was not whether but where the dividing line would fall.",
+        "move": "Gaddis frames the Cold War not as something that 'started' in 1947 or 1948 but as the unavoidable continuation of a political question the war had deferred: what kind of order would replace Nazi Germany and imperial Japan? The wartime alliance had answered only the negative question — who would lose. Yalta negotiated the partition of Europe; Potsdam (July 1945) ratified the split over Germany; the Truman Doctrine (March 1947) and the Berlin Airlift (1948) made the partition military. None of this was a failure to keep the peace after the war; it was the shape of the peace itself.",
+        "handle": "The Cold War is WW2 continued by political means for the question the guns didn't answer."
+      },
+      "sources": [
+        { "ref": "John Lewis Gaddis, *The Cold War: A New History* (2005), chapter 1", "kind": "book" },
+        { "ref": "Yalta Conference protocol (February 1945)", "kind": "doc" },
+        { "ref": "George Kennan, 'Long Telegram' (February 1946)", "kind": "doc" }
+      ],
+      "feynman": "Why is it misleading to describe the Cold War as 'starting' in 1947 or 1948?",
+      "traps": [
+        "Treating 1945 as a clean ending — the Greek, Chinese, Indochinese, and Palestinian civil wars are all immediate WW2 continuations",
+        "Reading the Cold War as a failure of the postwar order rather than as its primary structure"
+      ]
+    },
+    {
+      "id": "technological-long-tail",
+      "title": "The technological long tail",
+      "chapter": "aftermath",
+      "prerequisites": ["industrial-science"],
+      "story": {
+        "knot": "Walk through a modern office and trace the direct WW2 lineage of what you see. Computers: Bletchley's Colossus (1943) and ENIAC (1945, for artillery tables). Jet aviation: Me 262 and Gloster Meteor, first combat jet aircraft. Nuclear power: Manhattan Project civilianized. Antibiotics at scale: wartime penicillin production collapsed cost from thousands-per-dose to pennies-per-dose. Operations research, applied statistics, systems engineering — all mature as disciplines under wartime pressure.",
+        "move": "The temptation is to say 'WW2 invented modern technology'. More precisely: WW2 *accelerated* technology that largely had prewar origins. Radar, jet engines, computing, nuclear physics were all active research areas before 1939. What the war did was compress development timelines by an order of magnitude, provide essentially unlimited funding, and create demand that justified industrial-scale production (penicillin going from rare laboratory substance to mass-produced commodity in two years). The pattern — government funding + wartime urgency + industrial scale — becomes the template for Cold War science policy and, by extension, the modern research economy.",
+        "handle": "WW2 didn't invent most of what we live with. It compressed its timeline to about a fifth and made industrial production its default."
+      },
+      "sources": [
+        { "ref": "David Edgerton, *Britain's War Machine* (2011), chapters 3–4", "kind": "book" },
+        { "ref": "Vannevar Bush, *Science — The Endless Frontier* (1945)", "kind": "doc" }
+      ],
+      "feynman": "Pick one piece of technology you use weekly. Explain the specific way WW2 shaped how (not whether) you have it.",
+      "build": "A 1000-word essay: 'One institution or technology I use every week that exists because of WW2, and how it would be different if the war had ended differently.' Share with one other human for feedback.",
+      "traps": [
+        "Crediting WW2 with inventions that had prewar origins",
+        "Ignoring that many wartime technologies (jet aircraft, rockets) matured on the losing side and were transferred via Operation Paperclip"
+      ]
+    }
+  ],
+  "mastery": [
+    "When a colleague says 'this is another Munich', you can respond with the actual Munich calculus and whether the analogy holds — or where specifically it breaks.",
+    "You reach for causation, not chronology. Instead of 'and then…', you say 'because X had happened, Y became the only remaining option for Z' — and you can cite the primary source.",
+    "You resist moral shortcuts without losing moral clarity. You can describe why ordinary people participated in atrocity without excusing it, and critique Allied decisions without falling into false equivalence."
+  ]
+}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchText } from "../lib/github";
 import { parseRoadmap, type Week } from "../lib/parseContent";
+import { loadNodeRoadmap, type NodeRoadmap, type RoadmapNode } from "../lib/nodes";
 import {
   getStudy,
   markPhase,
@@ -12,7 +13,6 @@ import {
 import { streamMessage } from "../lib/claude";
 import { getApiKey, getBackend, getModel } from "../lib/storage";
 import { renderMarkdown } from "../lib/markdown";
-import Md from "./Md";
 
 const PHASE_LABELS: Record<Phase, string> = {
   prime: "Prime",
@@ -22,11 +22,34 @@ const PHASE_LABELS: Record<Phase, string> = {
 };
 
 const PHASE_BLURBS: Record<Phase, string> = {
-  prime: "Questions to hold in your head before you read.",
+  prime: "Story beats to hold in your head before you read.",
   read: "Engage the primary sources. Capture confusions and excerpts.",
   explain: "Write it plain. The auditor finds the cracks.",
   defend: "Pressure-test the weak spots until they stop breaking.",
 };
+
+/**
+ * Shared shape that powers the 4 phases regardless of source
+ * (graph-node roadmap or legacy week roadmap).
+ */
+interface UnitContext {
+  mode: "node" | "week";
+  slug: string;
+  unitKey: string;           // studyKey unit — node id or week number as string
+  title: string;
+  feynmanQ: string;
+  sources: SourceEntry[];    // sources for the Read phase
+  traps: string[];
+  // Node mode provides pre-written story beats — no LLM call for Prime.
+  story?: { knot: string; move: string; handle: string };
+  // Week mode provides raw concept markdown so Prime can LLM-generate questions.
+  weekConceptsMarkdown?: string;
+}
+
+interface SourceEntry {
+  ref: string;
+  kind?: string;
+}
 
 function humanize(slug: string): string {
   return slug
@@ -36,49 +59,60 @@ function humanize(slug: string): string {
 }
 
 export default function StudyMode() {
-  const [slug, setSlug] = useState<string | null>(null);
-  const [weekNum, setWeekNum] = useState<number | null>(null);
-  const [week, setWeek] = useState<Week | null>(null);
+  const [ctx, setCtx] = useState<UnitContext | null>(null);
+  const [state, setState] = useState<StudyState | null>(null);
+  const [phase, setPhase] = useState<Phase>("prime");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [phase, setPhase] = useState<Phase>("prime");
-  const [state, setState] = useState<StudyState | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const s = params.get("slug");
-    const w = Number(params.get("week"));
-    if (!s || !w) {
-      setError("Missing ?slug= or ?week=");
+    const nodeId = params.get("node");
+    const week = params.get("week");
+
+    if (!s || (!nodeId && !week)) {
+      setError("Missing ?slug= and ?node= or ?week=");
       setLoading(false);
       return;
     }
-    setSlug(s);
-    setWeekNum(w);
 
-    fetchText(`roadmaps/${s}/roadmap.md`)
-      .then((md) => {
-        const parsed = parseRoadmap(md);
-        const found = parsed.weeks.find((x) => x.number === w);
-        if (!found) {
-          setError(`Week ${w} not found in roadmap.`);
-          return;
+    (async () => {
+      try {
+        if (nodeId) {
+          const rm = await loadNodeRoadmap(s);
+          if (!rm) throw new Error(`No roadmap.json for ${s}`);
+          const node = rm.nodes.find((n) => n.id === nodeId);
+          if (!node) throw new Error(`Node ${nodeId} not found`);
+          setCtx(buildNodeContext(s, rm, node));
+        } else if (week) {
+          const w = Number(week);
+          const md = await fetchText(`roadmaps/${s}/roadmap.md`);
+          const parsed = parseRoadmap(md);
+          const found = parsed.weeks.find((x) => x.number === w);
+          if (!found) throw new Error(`Week ${w} not found`);
+          setCtx(buildWeekContext(s, w, found));
         }
-        setWeek(found);
-        const id = studyKey(s, w);
-        const existing = getStudy(id);
-        setState(
-          existing ??
-            upsertStudy(id, {
-              topicSlug: s,
-              week: w,
-              theme: found.theme,
-            }),
-        );
-      })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
+      } catch (e) {
+        setError((e as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
+
+  useEffect(() => {
+    if (!ctx) return;
+    const id = studyKey(ctx.slug, ctx.unitKey);
+    setState(
+      getStudy(id) ??
+        upsertStudy(id, {
+          topicSlug: ctx.slug,
+          unit: ctx.unitKey,
+          theme: ctx.title,
+        }),
+    );
+  }, [ctx]);
 
   function updateState(patch: Partial<Omit<StudyState, "id" | "updatedAt">>) {
     if (!state) return;
@@ -99,79 +133,81 @@ export default function StudyMode() {
         {error}
       </div>
     );
-  if (!week || !slug || !weekNum || !state) return null;
+  if (!ctx || !state) return null;
 
   return (
     <div className="space-y-8">
       <header className="space-y-3">
-        <a href={`/topic?slug=${slug}`} className="text-xs font-mono text-ink/50 hover:text-ink">
-          ← {humanize(slug)}
+        <a
+          href={
+            ctx.mode === "node"
+              ? `/node?topic=${ctx.slug}&id=${ctx.unitKey}`
+              : `/topic?slug=${ctx.slug}`
+          }
+          className="text-xs font-mono text-ink/50 hover:text-ink"
+        >
+          ← {ctx.mode === "node" ? humanize(ctx.slug) : "back"}
         </a>
         <div>
           <div className="text-xs font-mono uppercase tracking-widest text-accent">
-            Study — Week {week.number}
+            Study — {ctx.mode === "node" ? "Node" : `Week ${ctx.unitKey}`}
           </div>
-          <h1 className="font-serif text-3xl tracking-tight leading-snug mt-1">
-            {week.theme}
-          </h1>
+          <h1 className="font-serif text-3xl tracking-tight leading-snug mt-1">{ctx.title}</h1>
         </div>
-        <OutcomeRow week={week} />
       </header>
 
       <PhaseBar phase={phase} onChange={setPhase} phases={state.phases} />
 
       <section>
         {phase === "prime" && (
-          <PrimePhase
-            week={week}
-            state={state}
-            onUpdate={updateState}
-            onMarkDone={() => togglePhase("prime")}
-          />
+          <PrimePhase ctx={ctx} state={state} onUpdate={updateState} onMarkDone={() => togglePhase("prime")} />
         )}
         {phase === "read" && (
-          <ReadPhase
-            week={week}
-            state={state}
-            onUpdate={updateState}
-            onMarkDone={() => togglePhase("read")}
-          />
+          <ReadPhase ctx={ctx} state={state} onUpdate={updateState} onMarkDone={() => togglePhase("read")} />
         )}
         {phase === "explain" && (
-          <ExplainPhase
-            week={week}
-            state={state}
-            onUpdate={updateState}
-            onMarkDone={() => togglePhase("explain")}
-          />
+          <ExplainPhase ctx={ctx} state={state} onUpdate={updateState} onMarkDone={() => togglePhase("explain")} />
         )}
         {phase === "defend" && (
-          <DefendPhase
-            week={week}
-            slug={slug}
-            state={state}
-            onMarkDone={() => togglePhase("defend")}
-          />
+          <DefendPhase ctx={ctx} state={state} onMarkDone={() => togglePhase("defend")} />
         )}
       </section>
     </div>
   );
 }
 
-function OutcomeRow({ week }: { week: Week }) {
-  const outcome = week.sections.find((s) => s.label.toLowerCase().startsWith("outcome"));
-  if (!outcome) return null;
-  return (
-    <div className="bg-white border border-rule rounded-lg p-4">
-      <div className="text-[10px] font-mono uppercase tracking-widest text-ink/50 mb-1">
-        ◎ outcome — what you'll be able to do by end of week
-      </div>
-      <div className="font-serif text-[15px] leading-relaxed">
-        <Md text={outcome.body} />
-      </div>
-    </div>
-  );
+// --- Context builders --------------------------------------------------------
+
+function buildNodeContext(slug: string, rm: NodeRoadmap, node: RoadmapNode): UnitContext {
+  return {
+    mode: "node",
+    slug,
+    unitKey: node.id,
+    title: node.title,
+    feynmanQ: node.feynman,
+    sources: node.sources,
+    traps: node.traps ?? [],
+    story: node.story,
+  };
 }
+
+function buildWeekContext(slug: string, week: number, w: Week): UnitContext {
+  const concepts = w.sections.find((s) => s.label.toLowerCase().startsWith("core concept"));
+  const feynman = w.sections.find((s) => s.label.toLowerCase().startsWith("feynman"));
+  const traps = w.sections.find((s) => s.label.toLowerCase().startsWith("common trap"));
+  return {
+    mode: "week",
+    slug,
+    unitKey: String(week),
+    title: w.theme,
+    feynmanQ: feynman?.body ?? "",
+    sources: (concepts ? extractBullets(concepts.body) : []).map((b) => ({ ref: b })),
+    traps: traps ? extractBullets(traps.body) : [],
+    weekConceptsMarkdown: concepts?.body,
+  };
+}
+
+// --- PhaseBar --------------------------------------------------------------
 
 function PhaseBar({
   phase,
@@ -193,27 +229,16 @@ function PhaseBar({
             key={p}
             onClick={() => onChange(p)}
             className={`text-left px-4 py-3 rounded-lg border transition-all ${
-              active
-                ? "bg-white border-accent shadow-sm"
-                : "bg-white/50 border-rule hover:border-accent/50"
+              active ? "bg-white border-accent shadow-sm" : "bg-white/50 border-rule hover:border-accent/50"
             }`}
           >
             <div className="flex items-center gap-2">
-              <span
-                className={`font-mono text-[10px] tabular-nums ${
-                  active ? "text-accent" : "text-ink/40"
-                }`}
-              >
+              <span className={`font-mono text-[10px] tabular-nums ${active ? "text-accent" : "text-ink/40"}`}>
                 0{i + 1}
               </span>
-              <span
-                className={`w-2 h-2 rounded-full ${done ? "bg-accent" : "bg-ink/15"}`}
-                aria-label={done ? "done" : "not done"}
-              />
+              <span className={`w-2 h-2 rounded-full ${done ? "bg-accent" : "bg-ink/15"}`} />
             </div>
-            <div
-              className={`font-serif text-base mt-0.5 ${active ? "text-ink" : "text-ink/70"}`}
-            >
+            <div className={`font-serif text-base mt-0.5 ${active ? "text-ink" : "text-ink/70"}`}>
               {PHASE_LABELS[p]}
             </div>
             <div className="text-[11px] text-ink/50 leading-tight mt-0.5 hidden sm:block">
@@ -226,17 +251,75 @@ function PhaseBar({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Phase: Prime
-// ---------------------------------------------------------------------------
+// --- Prime phase -----------------------------------------------------------
 
 function PrimePhase({
-  week,
+  ctx,
   state,
   onUpdate,
   onMarkDone,
 }: {
-  week: Week;
+  ctx: UnitContext;
+  state: StudyState;
+  onUpdate: (patch: Partial<StudyState>) => void;
+  onMarkDone: () => void;
+}) {
+  // In node mode, the story beats are pre-written — no LLM call needed.
+  if (ctx.mode === "node" && ctx.story) {
+    return (
+      <div className="space-y-5">
+        <PhaseHeader title="Prime" body="The story that earns the concept. Read these before you touch the sources." />
+        <div className="bg-white border border-rule rounded-lg p-5 space-y-5">
+          <StoryBeatBlock index="01" label="The knot" body={ctx.story.knot} />
+          <StoryBeatBlock index="02" label="The move" body={ctx.story.move} accent />
+          <StoryBeatBlock index="03" label="The handle" body={ctx.story.handle} compact />
+          <div className="pt-2 border-t border-rule">
+            <DoneToggle
+              done={state.phases.prime}
+              onToggle={onMarkDone}
+              label="I've internalized the story arc"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Week mode — generate framing questions on demand.
+  return <WeekPrime ctx={ctx} state={state} onUpdate={onUpdate} onMarkDone={onMarkDone} />;
+}
+
+function StoryBeatBlock({
+  label,
+  index,
+  body,
+  accent,
+  compact,
+}: {
+  label: string;
+  index: string;
+  body: string;
+  accent?: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <div className={accent ? "border-l-2 border-accent/60 pl-4" : "border-l-2 border-rule pl-4"}>
+      <div className="flex items-baseline gap-3 mb-2">
+        <span className="font-mono text-[10px] text-accent tabular-nums">{index}</span>
+        <h3 className="font-mono text-[10px] uppercase tracking-widest text-ink/60">{label}</h3>
+      </div>
+      <p className={`font-serif ${compact ? "text-lg italic" : "text-[15px]"} leading-relaxed`}>{body}</p>
+    </div>
+  );
+}
+
+function WeekPrime({
+  ctx,
+  state,
+  onUpdate,
+  onMarkDone,
+}: {
+  ctx: UnitContext;
   state: StudyState;
   onUpdate: (patch: Partial<StudyState>) => void;
   onMarkDone: () => void;
@@ -245,9 +328,6 @@ function PrimePhase({
   const [buf, setBuf] = useState("");
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-
-  const concepts = sectionBody(week, "core concept");
-  const feynman = sectionBody(week, "feynman");
 
   async function generate() {
     const backend = getBackend();
@@ -263,12 +343,12 @@ function PrimePhase({
 
     const system = `You are a pedagogy expert. Given a learning unit, produce exactly 3 crisp framing questions the learner should hold in their head *while* reading the primary sources. Rules:
 - Numbered list, one question per line, nothing else.
-- Each question should make the reader notice a specific mechanism, distinction, or tradeoff — not a trivia fact.
+- Each question should make the reader notice a specific mechanism, distinction, or tradeoff.
 - Do not answer the questions. Do not summarize. Do not include preamble.
 - Return exactly 3 questions and stop.`;
 
-    const userPrompt = `Week theme: ${week.theme}\n\nCore concepts for this week:\n${concepts}\n\n${
-      feynman ? `Feynman checkpoint for this week:\n${feynman}\n\n` : ""
+    const userPrompt = `Week theme: ${ctx.title}\n\nCore concepts:\n${ctx.weekConceptsMarkdown ?? ""}\n\n${
+      ctx.feynmanQ ? `Feynman checkpoint:\n${ctx.feynmanQ}\n\n` : ""
     }Generate 3 framing questions.`;
 
     let acc = "";
@@ -299,13 +379,12 @@ function PrimePhase({
 
   return (
     <div className="space-y-5">
-      <PhaseHeader title="Prime" body={PHASE_BLURBS.prime} />
+      <PhaseHeader title="Prime" body="Questions to hold in your head before you read." />
 
       {questions.length === 0 && !generating && (
         <div className="bg-white border border-rule rounded-lg p-5 space-y-3">
           <p className="text-[15px] text-ink-soft">
-            Before you touch the sources, generate three framing questions. These are anchors your
-            brain will latch onto while you read — they're <em>not</em> meant to be answered now.
+            Before you touch the sources, generate three framing questions to anchor your reading.
           </p>
           <button
             onClick={generate}
@@ -318,36 +397,27 @@ function PrimePhase({
 
       {(generating || buf) && (
         <div className="bg-white border border-accent/30 rounded-lg p-5">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-2">
-            streaming…
-          </div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-2">streaming…</div>
           <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: renderMarkdown(buf) }} />
         </div>
       )}
 
       {questions.length > 0 && !generating && (
         <div className="bg-white border border-rule rounded-lg p-5 space-y-3">
-          <div className="text-[11px] uppercase tracking-widest text-ink/50 font-mono">
-            Hold these while reading
-          </div>
+          <div className="text-[11px] uppercase tracking-widest text-ink/50 font-mono">Hold these while reading</div>
           <ol className="space-y-3">
             {questions.map((q, i) => (
               <li key={i} className="flex gap-4">
-                <span className="font-mono text-accent tabular-nums shrink-0 text-sm pt-0.5">
-                  0{i + 1}
-                </span>
+                <span className="font-mono text-accent tabular-nums shrink-0 text-sm pt-0.5">0{i + 1}</span>
                 <span className="font-serif text-[15px] leading-relaxed">{q}</span>
               </li>
             ))}
           </ol>
           <div className="flex items-center gap-3 pt-2">
-            <button
-              onClick={generate}
-              className="text-xs font-mono underline text-ink/50 hover:text-ink"
-            >
+            <button onClick={generate} className="text-xs font-mono underline text-ink/50 hover:text-ink">
               regenerate
             </button>
-            <DoneToggle done={state.phases.prime} onToggle={onMarkDone} label="I've internalized these questions" />
+            <DoneToggle done={state.phases.prime} onToggle={onMarkDone} label="I've internalized these" />
           </div>
         </div>
       )}
@@ -357,23 +427,19 @@ function PrimePhase({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Phase: Read
-// ---------------------------------------------------------------------------
+// --- Read phase ------------------------------------------------------------
 
 function ReadPhase({
-  week,
+  ctx,
   state,
   onUpdate,
   onMarkDone,
 }: {
-  week: Week;
+  ctx: UnitContext;
   state: StudyState;
   onUpdate: (patch: Partial<StudyState>) => void;
   onMarkDone: () => void;
 }) {
-  const concepts = week.sections.find((s) => s.label.toLowerCase().startsWith("core concept"));
-  const traps = week.sections.find((s) => s.label.toLowerCase().startsWith("common trap"));
   const [notes, setNotes] = useState(state.notes ?? "");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -387,38 +453,34 @@ function ReadPhase({
     saveTimer.current = setTimeout(() => onUpdate({ notes: v }), 400);
   }
 
-  const bullets = concepts ? extractBullets(concepts.body) : [];
-
   return (
     <div className="space-y-5">
       <PhaseHeader title="Read" body={PHASE_BLURBS.read} />
 
       <div className="grid lg:grid-cols-[1fr_1fr] gap-6">
         <div className="space-y-4">
-          <h3 className="text-[11px] uppercase tracking-widest text-ink/50 font-mono">
-            Primary sources for this week
-          </h3>
+          <h3 className="text-[11px] uppercase tracking-widest text-ink/50 font-mono">Primary sources</h3>
           <ul className="space-y-3">
-            {bullets.map((b, i) => (
-              <SourceBullet key={i} text={b} />
+            {ctx.sources.map((s, i) => (
+              <SourceCard key={i} source={s} />
             ))}
           </ul>
-          {traps && (
+          {ctx.traps.length > 0 && (
             <details className="pt-2">
               <summary className="cursor-pointer text-[11px] uppercase tracking-widest font-mono text-ink/50 hover:text-ink">
                 ⚠ watch for these traps
               </summary>
-              <div className="mt-2 text-[14px] leading-relaxed text-ink-soft">
-                <Md text={traps.body} />
-              </div>
+              <ul className="mt-2 list-disc list-inside text-[14px] leading-relaxed text-ink-soft space-y-1">
+                {ctx.traps.map((t, i) => (
+                  <li key={i}>{t}</li>
+                ))}
+              </ul>
             </details>
           )}
         </div>
 
         <div className="space-y-3">
-          <h3 className="text-[11px] uppercase tracking-widest text-ink/50 font-mono">
-            Your reading notes
-          </h3>
+          <h3 className="text-[11px] uppercase tracking-widest text-ink/50 font-mono">Your reading notes</h3>
           <textarea
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
@@ -436,21 +498,24 @@ function ReadPhase({
   );
 }
 
-function SourceBullet({ text }: { text: string }) {
-  // Try to pull out the source portion after "Source:" or after →
-  const sourceMatch = text.match(/source:\s*([^.]+(?:\.[^.]+)*)/i);
-  const searchQuery = sourceMatch ? sourceMatch[1].trim() : text.slice(0, 120);
-  const searchUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(searchQuery)}`;
-  const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-
+function SourceCard({ source }: { source: SourceEntry }) {
+  const sourceMatch = source.ref.match(/source:\s*([^.]+(?:\.[^.]+)*)/i);
+  const query = sourceMatch ? sourceMatch[1].trim() : source.ref.slice(0, 160);
+  const scholar = `https://scholar.google.com/scholar?q=${encodeURIComponent(query)}`;
+  const google = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
   return (
     <li className="bg-white border border-rule rounded-lg p-4">
-      <div className="text-[14px] leading-relaxed"><Md text={text} /></div>
+      {source.kind && (
+        <span className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mr-2">
+          {source.kind}
+        </span>
+      )}
+      <span className="text-[14px]">{source.ref}</span>
       <div className="flex gap-3 mt-2 text-xs font-mono">
-        <a href={searchUrl} target="_blank" rel="noreferrer" className="text-accent underline hover:opacity-80">
-          find on scholar ↗
+        <a href={scholar} target="_blank" rel="noreferrer" className="text-accent underline hover:opacity-80">
+          scholar ↗
         </a>
-        <a href={googleUrl} target="_blank" rel="noreferrer" className="text-accent underline hover:opacity-80">
+        <a href={google} target="_blank" rel="noreferrer" className="text-accent underline hover:opacity-80">
           google ↗
         </a>
       </div>
@@ -458,17 +523,15 @@ function SourceBullet({ text }: { text: string }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Phase: Explain (Feynman audit inline)
-// ---------------------------------------------------------------------------
+// --- Explain phase ---------------------------------------------------------
 
 function ExplainPhase({
-  week,
+  ctx,
   state,
   onUpdate,
   onMarkDone,
 }: {
-  week: Week;
+  ctx: UnitContext;
   state: StudyState;
   onUpdate: (patch: Partial<StudyState>) => void;
   onMarkDone: () => void;
@@ -484,8 +547,6 @@ function ExplainPhase({
     setReport(state.auditReport ?? "");
   }, [state.id]);
 
-  const feynmanQ = sectionBody(week, "feynman");
-
   async function runAudit() {
     if (!text.trim()) return;
     const backend = getBackend();
@@ -499,22 +560,22 @@ function ExplainPhase({
     setReport("");
     abortRef.current = new AbortController();
 
-    const system = `You are a Feynman-technique auditor. The user has written a plain-language explanation. Your job is to find the cracks, not to praise. Produce:
+    const system = `You are a Feynman-technique auditor. The user has written a plain-language explanation. Find the cracks, not praise. Produce:
 
-1. A sentence-by-sentence table classifying each sentence as one of:
+1. A sentence-by-sentence table classifying each sentence as:
    - ✅ Clear — a bright 14-year-old would understand this directly
    - ⚠️ Jargon-laundering — a technical term was used as if self-evident
    - ❌ Causal gap — a "because/so/therefore" where the mechanism is missing
    - 🕳️ Unspoken assumption — a fact is treated as given that would reasonably be questioned
 
-2. A "## Knowledge Gaps" section with the top 3 gaps, each with: the gap, a diagnostic question, and the shortest fix path.
+2. A "## Knowledge Gaps" section with the top 3 gaps — each with: the gap, a diagnostic question, the shortest fix path.
 
-3. A single "## Rewrite prompt" question the user should answer before trying again.
+3. A single "## Rewrite prompt" question the user should answer before retrying.
 
-Rules: do not fill gaps yourself. Do not praise. If the explanation is under 150 words, tell the user to extend it. Return only the audit, no preamble.`;
+Rules: don't fill gaps. Don't praise. If under 150 words, tell user to extend. Return only the audit — no preamble.`;
 
-    const userPrompt = `Week theme: ${week.theme}${
-      feynmanQ ? `\n\nFeynman checkpoint I'm answering:\n${feynmanQ}` : ""
+    const userPrompt = `Concept: ${ctx.title}${
+      ctx.feynmanQ ? `\n\nFeynman checkpoint I'm answering:\n${ctx.feynmanQ}` : ""
     }\n\n---EXPLANATION---\n\n${text.trim()}`;
 
     let acc = "";
@@ -547,14 +608,10 @@ Rules: do not fill gaps yourself. Do not praise. If the explanation is under 150
     <div className="space-y-5">
       <PhaseHeader title="Explain" body={PHASE_BLURBS.explain} />
 
-      {feynmanQ && (
+      {ctx.feynmanQ && (
         <div className="bg-accent/5 border-l-2 border-accent/60 px-4 py-3 rounded-r">
-          <div className="text-[11px] uppercase tracking-widest text-accent/80 font-mono mb-1">
-            answer this
-          </div>
-          <div className="font-serif text-[15px] italic leading-relaxed">
-            <Md text={feynmanQ} />
-          </div>
+          <div className="text-[11px] uppercase tracking-widest text-accent/80 font-mono mb-1">answer this</div>
+          <div className="font-serif text-[15px] italic leading-relaxed">{ctx.feynmanQ}</div>
         </div>
       )}
 
@@ -591,11 +648,7 @@ Rules: do not fill gaps yourself. Do not praise. If the explanation is under 150
             </button>
           )}
           {report && !running && (
-            <DoneToggle
-              done={state.phases.explain}
-              onToggle={onMarkDone}
-              label="I've reviewed the gap report"
-            />
+            <DoneToggle done={state.phases.explain} onToggle={onMarkDone} label="I've reviewed the gap report" />
           )}
         </div>
       </div>
@@ -607,46 +660,35 @@ Rules: do not fill gaps yourself. Do not praise. If the explanation is under 150
           <div className="text-[11px] uppercase tracking-widest text-ink/50 font-mono mb-3">
             ◎ gap report {running && "(streaming…)"}
           </div>
-          <article
-            className="prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(report) }}
-          />
+          <article className="prose max-w-none" dangerouslySetInnerHTML={{ __html: renderMarkdown(report) }} />
         </div>
       )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Phase: Defend
-// ---------------------------------------------------------------------------
+// --- Defend phase ----------------------------------------------------------
 
 function DefendPhase({
-  week,
-  slug,
+  ctx,
   state,
   onMarkDone,
 }: {
-  week: Week;
-  slug: string;
+  ctx: UnitContext;
   state: StudyState;
   onMarkDone: () => void;
 }) {
-  const concept = week.theme;
-  const socraticUrl = `/templates/socratic?concept=${encodeURIComponent(concept)}&topic=${slug}`;
+  const socraticUrl = `/templates/socratic?concept=${encodeURIComponent(ctx.title)}&topic=${ctx.slug}`;
   const gapReport = state.auditReport ?? "";
 
   return (
     <div className="space-y-5">
       <PhaseHeader title="Defend" body={PHASE_BLURBS.defend} />
-
       <div className="bg-white border border-rule rounded-lg p-5 space-y-4">
         <p className="text-[15px] text-ink-soft leading-relaxed">
-          Pick the weakest spot from your gap report and let the Socratic tutor grill you on it.
-          The session refuses to hand over answers — it'll work you through the reasoning until
-          the cracks close.
+          Pick the weakest spot from your gap report and let the Socratic tutor grill you on it. The session
+          refuses to hand over answers — it'll work you through the reasoning until the cracks close.
         </p>
-
         {gapReport && (
           <details className="bg-paper border border-rule rounded p-3">
             <summary className="cursor-pointer text-[11px] uppercase tracking-widest text-ink/50 font-mono">
@@ -658,28 +700,18 @@ function DefendPhase({
             />
           </details>
         )}
-
         <div className="flex flex-wrap gap-3 items-center pt-1">
-          <a
-            href={socraticUrl}
-            className="bg-accent text-white font-mono px-4 py-2 rounded text-sm hover:bg-accent/90"
-          >
+          <a href={socraticUrl} className="bg-accent text-white font-mono px-4 py-2 rounded text-sm hover:bg-accent/90">
             Start Socratic session →
           </a>
-          <DoneToggle
-            done={state.phases.defend}
-            onToggle={onMarkDone}
-            label="I can defend this without notes"
-          />
+          <DoneToggle done={state.phases.defend} onToggle={onMarkDone} label="I can defend this without notes" />
         </div>
       </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Shared small components + utils
-// ---------------------------------------------------------------------------
+// --- Shared bits -----------------------------------------------------------
 
 function PhaseHeader({ title, body }: { title: string; body: string }) {
   return (
@@ -690,20 +722,9 @@ function PhaseHeader({ title, body }: { title: string; body: string }) {
   );
 }
 
-function DoneToggle({
-  done,
-  onToggle,
-  label,
-}: {
-  done: boolean;
-  onToggle: () => void;
-  label: string;
-}) {
+function DoneToggle({ done, onToggle, label }: { done: boolean; onToggle: () => void; label: string }) {
   return (
-    <button
-      onClick={onToggle}
-      className="flex items-center gap-2 text-sm text-ink-soft hover:text-ink"
-    >
+    <button onClick={onToggle} className="flex items-center gap-2 text-sm text-ink-soft hover:text-ink">
       <span
         className={`w-4 h-4 rounded border flex items-center justify-center ${
           done ? "bg-accent border-accent text-white" : "border-ink/30"
@@ -723,11 +744,6 @@ function ErrorBox({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   );
-}
-
-function sectionBody(week: Week, prefix: string): string | undefined {
-  const s = week.sections.find((x) => x.label.toLowerCase().startsWith(prefix));
-  return s?.body;
 }
 
 function extractBullets(body: string): string[] {

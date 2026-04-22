@@ -11,6 +11,7 @@ import {
   saveSession,
   slugKey,
 } from "../lib/sessions";
+import { extractRoadmapJson, type NodeRoadmap } from "../lib/nodes";
 import Md from "./Md";
 
 type Stage = "intake" | "interview" | "answering" | "generating" | "done";
@@ -200,10 +201,24 @@ export default function RoadmapWizard() {
       return;
     }
     try {
-      await writeLocal(`roadmaps/${slug}/roadmap.md`, finalRoadmap);
-      // Also seed progress_log.md so the topic page timeline has a home.
-      // We only write this if it doesn't look like it already exists — fetch
-      // first, fall through to write if it 404s.
+      // Try to parse the final output as a node-graph JSON. If it parses,
+      // save both the JSON (canonical) and a derived markdown view (for
+      // GitHub browsing). If parsing fails, fall back to the old behavior.
+      const graph = extractRoadmapJson(finalRoadmap);
+      if (graph) {
+        graph.generatedAt = new Date().toISOString();
+        if (!graph.slug) graph.slug = slug;
+        if (!graph.topic) graph.topic = topic;
+        await writeLocal(
+          `roadmaps/${slug}/roadmap.json`,
+          JSON.stringify(graph, null, 2),
+        );
+        await writeLocal(`roadmaps/${slug}/roadmap.md`, renderGraphAsMarkdown(graph));
+      } else {
+        await writeLocal(`roadmaps/${slug}/roadmap.md`, finalRoadmap);
+      }
+
+      // Seed progress_log.md if absent.
       const logPath = `roadmaps/${slug}/progress_log.md`;
       try {
         const res = await fetch(`/_local/${logPath}`);
@@ -483,4 +498,70 @@ function slugify(s: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function renderGraphAsMarkdown(g: NodeRoadmap): string {
+  const lines: string[] = [];
+  lines.push(`# Roadmap: ${g.topic}`);
+  lines.push("");
+  if (g.preamble) {
+    lines.push(`> ${g.preamble}`);
+    lines.push("");
+  }
+  lines.push(
+    "> Generated as a story-graph — see `roadmap.json` for the canonical form. Each node has a knot/move/handle story, sources, and prerequisites.",
+  );
+  lines.push("");
+
+  for (const ch of g.chapters) {
+    lines.push(`## ${ch.title}`);
+    if (ch.description) {
+      lines.push("");
+      lines.push(`_${ch.description}_`);
+    }
+    lines.push("");
+    const chapterNodes = g.nodes.filter((n) => n.chapter === ch.id);
+    for (const n of chapterNodes) {
+      lines.push(`### ${n.title}`);
+      lines.push("");
+      if (n.prerequisites.length > 0) {
+        const prereqs = n.prerequisites
+          .map((id) => g.nodes.find((x) => x.id === id)?.title ?? id)
+          .join(", ");
+        lines.push(`_Requires: ${prereqs}_`);
+        lines.push("");
+      }
+      lines.push(`**The knot** — ${n.story.knot}`);
+      lines.push("");
+      lines.push(`**The move** — ${n.story.move}`);
+      lines.push("");
+      lines.push(`**The handle** — ${n.story.handle}`);
+      lines.push("");
+      if (n.sources.length > 0) {
+        lines.push("**Sources:**");
+        for (const s of n.sources) lines.push(`- ${s.ref}`);
+        lines.push("");
+      }
+      lines.push(`**Feynman checkpoint:** ${n.feynman}`);
+      lines.push("");
+      if (n.build) {
+        lines.push(`**Build:** ${n.build}`);
+        lines.push("");
+      }
+      if (n.traps && n.traps.length > 0) {
+        lines.push("**Common traps:**");
+        for (const t of n.traps) lines.push(`- ${t}`);
+        lines.push("");
+      }
+    }
+  }
+
+  if (g.mastery.length > 0) {
+    lines.push("## Mastery Signal");
+    lines.push("");
+    g.mastery.forEach((m, i) => lines.push(`${i + 1}. ${m}`));
+    lines.push("");
+  }
+
+  return lines.join("\n");
 }

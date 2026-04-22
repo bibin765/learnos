@@ -13,7 +13,8 @@ export const PHASES: Phase[] = ["prime", "read", "explain", "defend"];
 export interface StudyState {
   id: string;
   topicSlug: string;
-  week: number;
+  /** Unit key — week number (legacy) or node id (graph roadmap). */
+  unit: string;
   theme?: string;
   primeQuestions?: string[];
   notes?: string;
@@ -21,12 +22,14 @@ export interface StudyState {
   auditReport?: string;
   phases: Record<Phase, boolean>;
   updatedAt: number;
+  // Legacy compat — some callers still reference `week`.
+  week?: number;
 }
 
 type Registry = Record<string, StudyState>;
 
-export function studyKey(topicSlug: string, week: number): string {
-  return `${topicSlug}#${week}`;
+export function studyKey(topicSlug: string, unit: string | number): string {
+  return `${topicSlug}#${unit}`;
 }
 
 function loadAll(): Registry {
@@ -60,7 +63,7 @@ export function upsertStudy(
     {
       id,
       topicSlug: "",
-      week: 0,
+      unit: "",
       phases: { prime: false, read: false, explain: false, defend: false },
       updatedAt: 0,
     };
@@ -84,5 +87,5 @@ export function markPhase(id: string, phase: Phase, done: boolean): StudyState |
 export function listStudyForTopic(topicSlug: string): StudyState[] {
   return Object.values(loadAll())
     .filter((s) => s.topicSlug === topicSlug)
-    .sort((a, b) => a.week - b.week);
+    .sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
 }
