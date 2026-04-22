@@ -4,6 +4,14 @@ import { fetchText } from "../lib/github";
 import { streamMessage } from "../lib/claude";
 import { extractPromptBody, fillTemplate, renderMarkdown } from "../lib/markdown";
 import { getApiKey, getBackend, getModel } from "../lib/storage";
+import {
+  deleteSession,
+  getSession,
+  relativeTime,
+  saveSession,
+  slugKey,
+  type SavedSession,
+} from "../lib/sessions";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -21,8 +29,11 @@ export default function SocraticChat() {
   const [streamBuf, setStreamBuf] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [resumedFrom, setResumedFrom] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const storageId = concept ? slugKey("socratic", concept) : "";
 
   useEffect(() => {
     fetchText("templates/socratic-tutor.md")
@@ -31,6 +42,18 @@ export default function SocraticChat() {
 
     const params = new URLSearchParams(window.location.search);
     const topic = params.get("concept") ?? params.get("topic");
+    const resumeId = params.get("resume");
+    if (resumeId) {
+      const saved = getSession(resumeId);
+      if (saved) {
+        setConcept((saved.meta?.concept as string) ?? saved.title);
+        setMessages(saved.turns);
+        setSessionId(saved.sessionId);
+        setResumedFrom(saved.updatedAt);
+        setStarted(true);
+        return;
+      }
+    }
     if (topic) setConcept(humanize(topic));
   }, []);
 
@@ -79,8 +102,21 @@ export default function SocraticChat() {
       });
 
       if (result.sessionId && !sessionId) setSessionId(result.sessionId);
-      setMessages((ms) => [...ms, { role: "assistant", content: acc }]);
+      const finalMessages = [...next, { role: "assistant" as const, content: acc }];
+      setMessages(finalMessages);
       setStreamBuf("");
+      // Persist after each completed turn so a refresh can resume this exact spot.
+      if (storageId) {
+        saveSession({
+          id: storageId,
+          kind: "socratic",
+          title: concept,
+          subtitle: "Socratic session",
+          turns: finalMessages,
+          sessionId: result.sessionId ?? sessionId,
+          meta: { concept },
+        });
+      }
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
         setError((e as Error).message);
@@ -96,17 +132,28 @@ export default function SocraticChat() {
 
   function start() {
     if (!concept.trim()) return;
+    // If a saved session for this concept exists, resume it silently.
+    const existing = getSession(slugKey("socratic", concept));
+    if (existing && existing.turns.length > 0) {
+      setMessages(existing.turns);
+      setSessionId(existing.sessionId);
+      setResumedFrom(existing.updatedAt);
+      setStarted(true);
+      return;
+    }
     setStarted(true);
     void send("Let's begin. Please ask me your opening question about this concept.");
   }
 
   function restart() {
     abortRef.current?.abort();
+    if (storageId) deleteSession(storageId);
     setStarted(false);
     setMessages([]);
     setStreamBuf("");
     setError(null);
     setSessionId(undefined);
+    setResumedFrom(null);
   }
 
   function stop() {
@@ -175,6 +222,12 @@ export default function SocraticChat() {
           restart
         </button>
       </div>
+
+      {resumedFrom !== null && (
+        <div className="text-xs font-mono text-accent/80 bg-accent/5 border border-accent/20 rounded px-3 py-2">
+          ↻ Resumed from {relativeTime(resumedFrom)}. Your previous session is restored — keep going, or click restart to start fresh.
+        </div>
+      )}
 
       <div
         ref={scrollRef}

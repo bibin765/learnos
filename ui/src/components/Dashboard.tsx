@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { listTopics, type Topic, repoConfigured, repoInfo } from "../lib/github";
+import RecentSessions from "./RecentSessions";
 
 const TEMPLATES = [
   {
@@ -35,6 +36,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-14">
       <HeroAndTemplates />
+      <RecentSessions />
       <CurriculumSection />
       <HowItWorks />
     </div>

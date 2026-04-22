@@ -4,6 +4,13 @@ import { fetchText, writeLocal, canWriteLocally } from "../lib/github";
 import { streamMessage } from "../lib/claude";
 import { extractPromptBody, fillTemplate, renderMarkdown } from "../lib/markdown";
 import { getApiKey, getBackend, getModel } from "../lib/storage";
+import {
+  deleteSession,
+  getSession,
+  relativeTime,
+  saveSession,
+  slugKey,
+} from "../lib/sessions";
 import Md from "./Md";
 
 type Stage = "intake" | "interview" | "answering" | "generating" | "done";
@@ -25,8 +32,11 @@ export default function RoadmapWizard() {
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [resumedFrom, setResumedFrom] = useState<number | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
+
+  const storageId = topic ? slugKey("roadmap-wizard", topic) : "";
 
   useEffect(() => {
     fetchText("templates/roadmap-gen.md")
@@ -34,8 +44,30 @@ export default function RoadmapWizard() {
       .catch((e: Error) => setTemplateError(e.message));
 
     const params = new URLSearchParams(window.location.search);
+    const resumeId = params.get("resume");
+    if (resumeId) {
+      const saved = getSession(resumeId);
+      if (saved) {
+        setTopic((saved.meta?.topic as string) ?? saved.title);
+        setTurns(saved.turns);
+        setSessionId(saved.sessionId);
+        setStage((saved.meta?.stage as Stage) ?? "done");
+        setResumedFrom(saved.updatedAt);
+        return;
+      }
+    }
     const t = params.get("topic");
-    if (t) setTopic(humanize(t));
+    if (t) {
+      const humanized = humanize(t);
+      setTopic(humanized);
+      const existing = getSession(slugKey("roadmap-wizard", humanized));
+      if (existing && existing.turns.length > 0) {
+        setTurns(existing.turns);
+        setSessionId(existing.sessionId);
+        setStage((existing.meta?.stage as Stage) ?? "done");
+        setResumedFrom(existing.updatedAt);
+      }
+    }
   }, []);
 
   const system = useMemo(
@@ -85,8 +117,20 @@ export default function RoadmapWizard() {
         firstTurn,
       });
       if (result.sessionId && !sessionId) setSessionId(result.sessionId);
-      setTurns((ts) => [...ts, { role: "assistant", content: acc }]);
+      const finalTurns = [...outbound, { role: "assistant" as const, content: acc }];
+      setTurns(finalTurns);
       setStreamBuf("");
+      if (storageId) {
+        saveSession({
+          id: storageId,
+          kind: "roadmap-wizard",
+          title: topic,
+          subtitle: "Roadmap wizard",
+          turns: finalTurns,
+          sessionId: result.sessionId ?? sessionId,
+          meta: { topic, stage },
+        });
+      }
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
         setError((e as Error).message);
@@ -102,8 +146,16 @@ export default function RoadmapWizard() {
   async function start() {
     if (!topic.trim()) return;
     setError(null);
+    // If a saved wizard session exists for this topic, resume it instead of starting over.
+    const existing = getSession(slugKey("roadmap-wizard", topic));
+    if (existing && existing.turns.length > 0) {
+      setTurns(existing.turns);
+      setSessionId(existing.sessionId);
+      setStage((existing.meta?.stage as Stage) ?? "done");
+      setResumedFrom(existing.updatedAt);
+      return;
+    }
     setStage("interview");
-    // Seed the first user message so Claude enters Phase 1.
     await runTurn(
       `Topic: ${topic.trim()}\n\nBegin Phase 1: ask your clarifying questions now.`,
       true,
@@ -125,12 +177,14 @@ export default function RoadmapWizard() {
 
   function restart() {
     abortRef.current?.abort();
+    if (storageId) deleteSession(storageId);
     setTurns([]);
     setStreamBuf("");
     setSessionId(undefined);
     setAnswer("");
     setError(null);
     setSaveMsg(null);
+    setResumedFrom(null);
     setStage("intake");
   }
 
@@ -177,6 +231,16 @@ export default function RoadmapWizard() {
       </header>
 
       <StageIndicator stage={stage} />
+
+      {resumedFrom !== null && stage !== "intake" && (
+        <div className="text-xs font-mono text-accent/80 bg-accent/5 border border-accent/20 rounded px-3 py-2">
+          ↻ Resumed from {relativeTime(resumedFrom)}. Continue where you left off, or click{" "}
+          <button onClick={restart} className="underline hover:no-underline">
+            start over
+          </button>
+          .
+        </div>
+      )}
 
       {stage === "intake" && (
         <section className="bg-white border border-rule rounded-lg p-6 space-y-4 max-w-xl">
