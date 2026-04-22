@@ -25,6 +25,35 @@ function localContentPlugin() {
           return res.end("Forbidden");
         }
 
+        // Write endpoint — dev only. Accepts POST /<relative/path> with JSON body.
+        // Body shape: { content: string, create_parents?: boolean }
+        if (req.method === "POST" || req.method === "PUT") {
+          let body = "";
+          for await (const chunk of req) body += chunk.toString("utf8");
+          let parsed;
+          try {
+            parsed = JSON.parse(body);
+          } catch {
+            res.statusCode = 400;
+            return res.end("Bad JSON");
+          }
+          if (typeof parsed?.content !== "string") {
+            res.statusCode = 400;
+            return res.end('Body must be { content: string }');
+          }
+          try {
+            if (parsed.create_parents) {
+              await fs.mkdir(path.dirname(abs), { recursive: true });
+            }
+            await fs.writeFile(abs, parsed.content, "utf8");
+            res.setHeader("content-type", "application/json");
+            return res.end(JSON.stringify({ ok: true, path: rel }));
+          } catch (e) {
+            res.statusCode = 500;
+            return res.end(`Write failed: ${e}`);
+          }
+        }
+
         try {
           const stat = await fs.stat(abs);
           if (stat.isDirectory()) {

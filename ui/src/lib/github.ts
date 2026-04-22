@@ -66,6 +66,27 @@ export function repoConfigured(): boolean {
   return Boolean(OWNER && REPO && OWNER !== "your-username");
 }
 
+/** Dev-only: write a file back to the local filesystem via the Vite middleware. */
+export async function writeLocal(relPath: string, content: string): Promise<void> {
+  if (!USE_LOCAL) {
+    throw new Error(
+      "Save is only available in local dev mode. Copy the output and commit manually.",
+    );
+  }
+  const res = await fetch(`/_local/${relPath}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ content, create_parents: true }),
+  });
+  if (!res.ok) {
+    throw new Error(`Save failed: ${res.status} ${await res.text()}`);
+  }
+}
+
+export function canWriteLocally(): boolean {
+  return USE_LOCAL;
+}
+
 export const repoInfo = USE_LOCAL
   ? { owner: "local", repo: "filesystem", branch: "dev" }
   : { owner: OWNER, repo: REPO, branch: BRANCH };

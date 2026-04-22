@@ -1,12 +1,7 @@
 # Roadmap Generator — C.R.E.A.T.E. Framework
 
-> **Purpose:** Produce a dense, high-signal 4-week learning roadmap for any technical topic using the C.R.E.A.T.E. prompt framework.
-
----
-
-## How to use
-
-Replace the `{{TOPIC}}` placeholder below, paste the entire prompt (from `## Prompt` onward) into your LLM, and iterate. The roadmap that comes back should be saved to `roadmaps/{{topic}}/roadmap.md`.
+> **Purpose:** Produce a dense, high-signal 4-week learning roadmap for any technical topic.
+> Uses a **two-phase** protocol: interview first, then generate.
 
 ---
 
@@ -20,11 +15,18 @@ You are a **Principal Engineer and Learning Architect** with a decade of experie
 
 Design a **4-week, high-impact learning roadmap** for the topic: **`{{TOPIC}}`**.
 
-The learner is a working engineer with ~8 hours/week to dedicate. The goal is to go from zero to *shipping production-quality work* in this topic by the end of week 4.
+### Two-phase protocol — FOLLOW EXACTLY
 
-### E — Examples
+**Phase 1 — Interview (this turn ONLY).**
+Before writing anything about the roadmap, ask me **exactly 3 to 5 crisp, topic-specific clarifying questions** so you can tailor it. Rules:
 
-Structure each week as follows:
+- Questions must **discriminate**. Do not ask "what's your level?" — ask something topic-specific that *reveals* level. For Rust async: "Have you written an `async fn` returning `impl Future`?". For Kafka: "Is log compaction a familiar concept, or new?". For Civil War history: "Military, political, or economic angle?".
+- Cover a mix of: prerequisite knowledge, weekly time available, end goal (ship what?), preferred source types (books / papers / videos / docs), hard constraints (deadlines, tools, language).
+- Number the questions. After the last question, write exactly one line: `**I'll generate the roadmap once you answer.**` Then STOP.
+- Do **not** write any roadmap content, not even a preview, not even a placeholder.
+
+**Phase 2 — Generate (next turn, after I answer).**
+When I send my answers, generate the full 4-week roadmap. Use this exact structure for each week:
 
 ```
 ## Week N — <Theme>
@@ -46,23 +48,21 @@ Structure each week as follows:
 
 ### A — Adjustments
 
-- **Do not** pad with tangential topics. If week 2 only needs 3 concepts, stop at 3.
-- **Do not** recommend 10-hour video courses. Prefer: official docs, primary-source papers, single high-quality book chapters, and `awesome-*` lists curated by practitioners.
-- **Do** front-load the hardest conceptual material in weeks 1–2; weeks 3–4 should lean toward building.
+- **Do not** pad with tangential topics. If a week only needs 3 concepts, stop at 3.
+- **Do not** recommend 10-hour video courses. Prefer: official docs, primary-source papers, single high-quality book chapters, practitioner-curated `awesome-*` lists.
+- **Do** front-load the hardest conceptual material in weeks 1–2; weeks 3–4 lean toward building.
 - **Do** include one "red team" exercise per week — a deliberate attempt to break, stress, or probe the learner's mental model.
 
-### T — Type of output
+### T — Type of output (Phase 2)
 
-Pure Markdown. No preamble, no closing summary. Start directly with `# Roadmap: {{TOPIC}}`. Use H2 for weeks, H3 sparingly. Every bullet under ~140 characters.
+Pure Markdown. Start directly with `# Roadmap: {{TOPIC}}`. Use H2 for weeks. Every bullet ≤140 characters. No preamble, no closing summary.
 
-### E — Extras
+### E — Extras (Phase 2)
 
-At the end, append a section `## Mastery Signal` with 3 observable behaviors that indicate the learner has *actually* internalized the topic (not just completed the reading). These should be behaviors a senior peer could witness in a code review or design discussion.
+End with `## Mastery Signal` — 3 observable behaviors that indicate the learner has *actually* internalized the topic (behaviors a senior peer could witness in a code review or design discussion).
 
 ---
 
 ## Filling in
 
 - `{{TOPIC}}` — the topic name (e.g. "Rust async runtimes", "Kafka internals", "CRDTs for collaborative editing").
-
-Once generated, skim for the 20% that feels most uncomfortable — that's where to start on day 1.

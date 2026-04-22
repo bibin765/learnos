@@ -1,21 +1,8 @@
 ---
 import Base from "../../layouts/Base.astro";
-import OneShotRunner from "../../components/OneShotRunner.tsx";
+import RoadmapWizard from "../../components/RoadmapWizard.tsx";
 ---
 
-<Base title="Roadmap Generator">
-  <OneShotRunner
-    client:load
-    templatePath="templates/roadmap-gen.md"
-    title="Roadmap Generator"
-    description="Produces a 4-week learning roadmap using the C.R.E.A.T.E. framework. Save the output to roadmaps/<topic>/roadmap.md."
-    fields={[
-      {
-        key: "TOPIC",
-        label: "Topic",
-        placeholder: "e.g. Rust async runtimes",
-        required: true,
-      },
-    ]}
-  />
+<Base title="Roadmap Wizard">
+  <RoadmapWizard client:load />
 </Base>
