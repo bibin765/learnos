@@ -201,7 +201,40 @@ export default function RoadmapWizard() {
     }
     try {
       await writeLocal(`roadmaps/${slug}/roadmap.md`, finalRoadmap);
-      setSaveMsg(`saved → roadmaps/${slug}/roadmap.md`);
+      // Also seed progress_log.md so the topic page timeline has a home.
+      // We only write this if it doesn't look like it already exists — fetch
+      // first, fall through to write if it 404s.
+      const logPath = `roadmaps/${slug}/progress_log.md`;
+      try {
+        const res = await fetch(`/_local/${logPath}`);
+        if (!res.ok) throw new Error("not found");
+      } catch {
+        const today = new Date().toISOString().slice(0, 10);
+        const logSeed = `# Progress Log — ${topic}
+
+> One dated entry per study session. Keep entries short and causal: what you touched, what clicked, what broke, what's next.
+
+## ${today} — Kickoff
+
+- Generated roadmap via the wizard.
+- Next: prime + read Week 1 sources.
+
+---
+
+<!-- Append new sessions below. Format:
+
+## YYYY-MM-DD — <Session title>
+
+- What I studied:
+- What clicked:
+- What's still fuzzy:
+- Next session:
+
+-->
+`;
+        await writeLocal(logPath, logSeed);
+      }
+      setSaveMsg(`saved → roadmaps/${slug}/`);
     } catch (e) {
       setSaveMsg((e as Error).message);
     }

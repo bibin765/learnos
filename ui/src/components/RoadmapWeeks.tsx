@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchText } from "../lib/github";
 import { parseRoadmap, type Week } from "../lib/parseContent";
+import { getStudy, studyKey, STUDY_EVENT, PHASES, type StudyState } from "../lib/study";
 import Md from "./Md";
 
 const SECTION_ORDER = ["Outcome", "Core concepts", "Build", "Feynman checkpoint", "Common traps"];
@@ -92,6 +93,23 @@ function WeekCard({ week, defaultOpen, slug }: { week: Week; defaultOpen: boolea
   const rest = sorted.filter((s) => s !== outcome);
   const feynman = rest.find((s) => s.label.toLowerCase().startsWith("feynman"));
 
+  const [study, setStudy] = useState<StudyState | null>(() =>
+    getStudy(studyKey(slug, week.number)),
+  );
+
+  useEffect(() => {
+    function refresh() {
+      setStudy(getStudy(studyKey(slug, week.number)));
+    }
+    refresh();
+    window.addEventListener(STUDY_EVENT, refresh);
+    return () => window.removeEventListener(STUDY_EVENT, refresh);
+  }, [slug, week.number]);
+
+  const phaseCount = study
+    ? PHASES.reduce((n, p) => n + (study.phases[p] ? 1 : 0), 0)
+    : 0;
+
   return (
     <li>
       <details open={defaultOpen} className="group bg-white border border-rule rounded-lg open:shadow-sm transition-shadow">
@@ -100,10 +118,20 @@ function WeekCard({ week, defaultOpen, slug }: { week: Week; defaultOpen: boolea
             Week {week.number}
           </span>
           <span className="flex-1 font-serif text-lg leading-snug">{week.theme}</span>
+          <ProgressDots count={phaseCount} />
           <span className="text-ink/30 text-xs font-mono group-open:rotate-90 transition-transform">▸</span>
         </summary>
 
         <div className="px-6 pb-6 space-y-5 border-t border-rule/50">
+          <div className="pt-4">
+            <a
+              href={`/study?slug=${slug}&week=${week.number}`}
+              className="inline-flex items-center gap-2 bg-accent text-white font-mono px-4 py-2 rounded text-sm hover:bg-accent/90"
+            >
+              {phaseCount > 0 ? `Continue studying (${phaseCount}/4)` : "Start studying this week"} →
+            </a>
+          </div>
+
           {outcome && (
             <div className="pt-4">
               <div className="text-[11px] uppercase tracking-widest text-ink/50 font-mono mb-1">
@@ -151,5 +179,18 @@ function WeekCard({ week, defaultOpen, slug }: { week: Week; defaultOpen: boolea
         </div>
       </details>
     </li>
+  );
+}
+
+function ProgressDots({ count }: { count: number }) {
+  return (
+    <span className="flex items-center gap-1 shrink-0" title={`${count} of 4 phases done`}>
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className={`w-1.5 h-1.5 rounded-full ${i < count ? "bg-accent" : "bg-ink/15"}`}
+        />
+      ))}
+    </span>
   );
 }

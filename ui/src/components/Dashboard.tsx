@@ -170,28 +170,28 @@ function HowItWorks() {
         {[
           {
             n: "01",
-            title: "Start a topic",
-            body: "Run scripts/new_topic.py to scaffold a folder, then use the Roadmap template above to generate a 4-week plan. Save the output to roadmaps/<topic>/roadmap.md.",
+            title: "Generate a tailored roadmap",
+            body: "Open the Roadmap wizard above, type your topic, and answer the 3–5 clarifying questions. Save directly to roadmaps/<topic>/ — the app handles the file layout.",
           },
           {
             n: "02",
-            title: "Read primary sources, not aggregators",
-            body: "Each week names 3–5 canonical sources. Work through them in order. Log short entries to progress_log.md as you go — what clicked, what broke, what's next.",
+            title: "Open the topic, pick a week",
+            body: "Each week is a card: outcome, core concepts, build artifact, Feynman checkpoint. Click “Start studying this week” to enter Study mode.",
           },
           {
             n: "03",
-            title: "Pressure-test with Socratic",
-            body: "Pick the concept you feel least solid on. The tutor will refuse to hand over answers — let it grill you until your mental model has fewer cracks.",
+            title: "Work the 4-phase loop",
+            body: "Prime (hold 3 questions in mind) → Read (primary sources + your notes) → Explain (Feynman audit on your plain-language version) → Defend (Socratic grilling on the cracks).",
           },
           {
             n: "04",
-            title: "Audit with Feynman",
-            body: "Write 200–400 words explaining the concept to a smart 14-year-old, no jargon. The auditor classifies every sentence and produces a gap report.",
+            title: "Ship an artifact",
+            body: "Each week has a build: a repo, a diagram, an essay, a demo. If there's nothing to link, the week didn't happen.",
           },
           {
             n: "05",
-            title: "Ship an artifact",
-            body: "Each week has a build: a repo, a diagram, an essay, a demo. Without a shipped artifact, the week doesn't count. If it's not in git, it didn't happen.",
+            title: "Log what you learned",
+            body: "Add dated entries to progress_log.md — short and causal: what clicked, what broke, what's next. The topic page renders them as a timeline.",
           },
         ].map((step) => (
           <li key={step.n} className="flex gap-5">
