@@ -3,7 +3,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { fetchText } from "../lib/github";
 import { streamMessage } from "../lib/claude";
 import { extractPromptBody, fillTemplate, renderMarkdown } from "../lib/markdown";
-import { getApiKey, getModel } from "../lib/storage";
+import { getApiKey, getBackend, getModel } from "../lib/storage";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -20,6 +20,7 @@ export default function SocraticChat() {
   const [streaming, setStreaming] = useState<boolean>(false);
   const [streamBuf, setStreamBuf] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -40,9 +41,10 @@ export default function SocraticChat() {
   const systemPrompt = template ? fillTemplate(template, { CONCEPT: concept }) : "";
 
   async function send(userText: string) {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setError("Paste an Anthropic API key in the bar at the top first.");
+    const backend = getBackend();
+    const apiKey = getApiKey() ?? undefined;
+    if (backend === "api" && !apiKey) {
+      setError("Paste an Anthropic API key in the bar at the top, or switch to CLI mode.");
       return;
     }
     setError(null);
@@ -55,13 +57,14 @@ export default function SocraticChat() {
     abortRef.current = new AbortController();
 
     let acc = "";
+    const isFirst = sessionId === undefined;
     try {
       const apiMessages: Anthropic.MessageParam[] = next.map((m) => ({
         role: m.role,
         content: m.content,
       }));
 
-      await streamMessage({
+      const result = await streamMessage({
         apiKey,
         model: getModel(),
         system: systemPrompt,
@@ -71,8 +74,11 @@ export default function SocraticChat() {
           setStreamBuf(acc);
         },
         signal: abortRef.current.signal,
+        sessionId,
+        firstTurn: isFirst,
       });
 
+      if (result.sessionId && !sessionId) setSessionId(result.sessionId);
       setMessages((ms) => [...ms, { role: "assistant", content: acc }]);
       setStreamBuf("");
     } catch (e) {
@@ -100,6 +106,7 @@ export default function SocraticChat() {
     setMessages([]);
     setStreamBuf("");
     setError(null);
+    setSessionId(undefined);
   }
 
   function stop() {

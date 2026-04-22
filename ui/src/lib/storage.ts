@@ -1,7 +1,9 @@
 const KEY_API = "learnos.anthropic_api_key";
 const KEY_MODEL = "learnos.model";
+const KEY_BACKEND = "learnos.backend";
 
 export type ModelId = "claude-opus-4-7" | "claude-sonnet-4-6";
+export type Backend = "cli" | "api";
 
 export const MODELS: { id: ModelId; label: string; blurb: string }[] = [
   {
@@ -41,4 +43,16 @@ export function getModel(): ModelId {
 export function setModel(m: ModelId): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY_MODEL, m);
+}
+
+export function getBackend(): Backend {
+  if (typeof window === "undefined") return "cli";
+  const b = localStorage.getItem(KEY_BACKEND);
+  if (b === "api" || b === "cli") return b;
+  return "cli"; // default: route through local Claude Code CLI
+}
+
+export function setBackend(b: Backend): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(KEY_BACKEND, b);
 }

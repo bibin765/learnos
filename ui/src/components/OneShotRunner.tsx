@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchText } from "../lib/github";
 import { streamMessage } from "../lib/claude";
 import { extractPromptBody, fillTemplate, renderMarkdown } from "../lib/markdown";
-import { getApiKey, getModel } from "../lib/storage";
+import { getApiKey, getBackend, getModel } from "../lib/storage";
 
 interface FieldSpec {
   key: string;
@@ -57,9 +57,10 @@ export default function OneShotRunner({ templatePath, fields, title, description
   }
 
   async function run() {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setError("Paste an Anthropic API key in the bar at the top first.");
+    const backend = getBackend();
+    const apiKey = getApiKey() ?? undefined;
+    if (backend === "api" && !apiKey) {
+      setError("Paste an Anthropic API key in the bar at the top, or switch to CLI mode.");
       return;
     }
     setError(null);
@@ -68,7 +69,8 @@ export default function OneShotRunner({ templatePath, fields, title, description
     abortRef.current = new AbortController();
 
     try {
-      const system = "You are an expert writing assistant. Follow the user's prompt exactly and return only the requested output.";
+      const system =
+        "You are an expert writing assistant. Follow the user's prompt exactly and return only the requested output — no preamble, no closing remarks.";
       let userPrompt = fillTemplate(template, values);
       // Feynman template: append the user's explanation under the delimiter the
       // template's protocol expects, since extractPromptBody trims past the delimiter.
@@ -82,6 +84,7 @@ export default function OneShotRunner({ templatePath, fields, title, description
         messages: [{ role: "user", content: userPrompt }],
         onText: (delta) => setOutput((o) => o + delta),
         signal: abortRef.current.signal,
+        firstTurn: true,
       });
     } catch (e) {
       if ((e as Error).name !== "AbortError") {

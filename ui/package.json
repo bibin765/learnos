@@ -4,8 +4,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "dev": "concurrently -n web,bridge -c cyan,magenta \"astro dev\" \"node bridge/server.mjs\"",
+    "dev:web": "astro dev",
+    "dev:bridge": "node bridge/server.mjs",
+    "start": "npm run dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -15,6 +17,7 @@
     "@astrojs/react": "^3.6.2",
     "@astrojs/tailwind": "^5.1.2",
     "astro": "^4.16.18",
+    "concurrently": "^9.2.1",
     "marked": "^14.1.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
