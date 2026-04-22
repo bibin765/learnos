@@ -1,6 +1,9 @@
 const KEY_API = "learnos.anthropic_api_key";
 const KEY_MODEL = "learnos.model";
 const KEY_BACKEND = "learnos.backend";
+const KEY_USAGE = "learnos.usage";
+
+export const USAGE_EVENT = "learnos:usage-updated";
 
 export type ModelId = "claude-opus-4-7" | "claude-sonnet-4-6";
 export type Backend = "cli" | "api";
@@ -55,4 +58,57 @@ export function getBackend(): Backend {
 export function setBackend(b: Backend): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY_BACKEND, b);
+}
+
+export interface Usage {
+  input_tokens: number;
+  output_tokens: number;
+  cache_creation_input_tokens: number;
+  cache_read_input_tokens: number;
+  cost_usd: number;
+  runs: number;
+}
+
+const ZERO_USAGE: Usage = {
+  input_tokens: 0,
+  output_tokens: 0,
+  cache_creation_input_tokens: 0,
+  cache_read_input_tokens: 0,
+  cost_usd: 0,
+  runs: 0,
+};
+
+export function getUsage(): Usage {
+  if (typeof window === "undefined") return { ...ZERO_USAGE };
+  try {
+    const raw = localStorage.getItem(KEY_USAGE);
+    if (!raw) return { ...ZERO_USAGE };
+    return { ...ZERO_USAGE, ...(JSON.parse(raw) as Partial<Usage>) };
+  } catch {
+    return { ...ZERO_USAGE };
+  }
+}
+
+export function addUsage(delta: Partial<Usage>): Usage {
+  if (typeof window === "undefined") return { ...ZERO_USAGE };
+  const cur = getUsage();
+  const next: Usage = {
+    input_tokens: cur.input_tokens + (delta.input_tokens ?? 0),
+    output_tokens: cur.output_tokens + (delta.output_tokens ?? 0),
+    cache_creation_input_tokens:
+      cur.cache_creation_input_tokens + (delta.cache_creation_input_tokens ?? 0),
+    cache_read_input_tokens:
+      cur.cache_read_input_tokens + (delta.cache_read_input_tokens ?? 0),
+    cost_usd: cur.cost_usd + (delta.cost_usd ?? 0),
+    runs: cur.runs + 1,
+  };
+  localStorage.setItem(KEY_USAGE, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent(USAGE_EVENT, { detail: next }));
+  return next;
+}
+
+export function clearUsage(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(KEY_USAGE);
+  window.dispatchEvent(new CustomEvent(USAGE_EVENT, { detail: { ...ZERO_USAGE } }));
 }

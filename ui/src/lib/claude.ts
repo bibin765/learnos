@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { ModelId } from "./storage";
-import { getBackend } from "./storage";
+import type { ModelId, Usage } from "./storage";
+import { addUsage, getBackend } from "./storage";
 
 export interface StreamOptions {
   apiKey?: string;
@@ -116,6 +116,13 @@ async function streamViaCli(opts: StreamOptions): Promise<StreamResult> {
         } catch {
           /* skip */
         }
+      } else if (eventName === "usage") {
+        try {
+          const u = JSON.parse(dataLine) as Partial<Usage>;
+          addUsage(u);
+        } catch {
+          /* skip */
+        }
       } else if (eventName === "error") {
         try {
           errMsg = (JSON.parse(dataLine) as { message?: string }).message ?? dataLine;
@@ -171,6 +178,13 @@ async function streamViaApi(opts: StreamOptions): Promise<StreamResult> {
   );
 
   stream.on("text", opts.onText);
-  await stream.finalMessage();
+  const final = await stream.finalMessage();
+  const u = final.usage;
+  addUsage({
+    input_tokens: u.input_tokens ?? 0,
+    output_tokens: u.output_tokens ?? 0,
+    cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
+    cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
+  });
   return {};
 }

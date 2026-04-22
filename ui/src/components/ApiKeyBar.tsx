@@ -12,6 +12,7 @@ import {
   type Backend,
 } from "../lib/storage";
 import { bridgeHealthy } from "../lib/claude";
+import TokenCounter from "./TokenCounter";
 
 export default function ApiKeyBar() {
   const [backend, setBackendState] = useState<Backend>("cli");
@@ -128,19 +129,22 @@ export default function ApiKeyBar() {
           </>
         )}
 
-        <span className="ml-auto flex items-center gap-2">
-          <span className="font-mono text-ink/60 text-xs">model:</span>
-          <select
-            value={model}
-            onChange={onModelChange}
-            className="border border-ink/20 rounded px-2 py-1 font-mono text-xs bg-white"
-          >
-            {MODELS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
+        <span className="ml-auto flex items-center gap-3">
+          <TokenCounter />
+          <span className="flex items-center gap-2">
+            <span className="font-mono text-ink/60 text-xs">model:</span>
+            <select
+              value={model}
+              onChange={onModelChange}
+              className="border border-ink/20 rounded px-2 py-1 font-mono text-xs bg-white"
+            >
+              {MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </span>
         </span>
       </div>
 

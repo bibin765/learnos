@@ -84,9 +84,15 @@ const server = http.createServer(async (req, res) => {
         if (!trimmed) continue;
         try {
           const evt = JSON.parse(trimmed);
+
           const delta = extractTextDelta(evt);
           if (delta) {
             res.write(`event: text\ndata: ${JSON.stringify(delta)}\n\n`);
+          }
+
+          const usage = extractUsage(evt);
+          if (usage) {
+            res.write(`event: usage\ndata: ${JSON.stringify(usage)}\n\n`);
           }
         } catch {
           // ignore non-JSON lines
@@ -162,4 +168,24 @@ function extractTextDelta(evt) {
   // We don't emit these as deltas (we stream via stream_event above) to avoid doubling.
 
   return null;
+}
+
+/**
+ * Emit usage once per claude invocation, from the terminal `result` event.
+ * Shape (best-effort across Claude Code versions):
+ *   { type: "result", usage: { input_tokens, output_tokens,
+ *     cache_creation_input_tokens, cache_read_input_tokens },
+ *     total_cost_usd: N }
+ */
+function extractUsage(evt) {
+  if (!evt || typeof evt !== "object") return null;
+  if (evt.type !== "result") return null;
+  const u = evt.usage ?? {};
+  return {
+    input_tokens: u.input_tokens ?? 0,
+    output_tokens: u.output_tokens ?? 0,
+    cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
+    cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
+    cost_usd: typeof evt.total_cost_usd === "number" ? evt.total_cost_usd : 0,
+  };
 }
