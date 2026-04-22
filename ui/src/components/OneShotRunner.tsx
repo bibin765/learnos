@@ -106,10 +106,10 @@ export default function OneShotRunner({ templatePath, fields, title, description
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-mono">{title}</h1>
-        <p className="text-sm text-ink/60 mt-1">{description}</p>
-      </div>
+      <header>
+        <h1 className="font-serif text-3xl tracking-tight">{title}</h1>
+        <p className="text-[15px] text-ink-soft mt-2 leading-relaxed">{description}</p>
+      </header>
 
       {templateError && (
         <div className="bg-red-50 border border-red-200 text-red-900 text-sm p-3 rounded font-mono">
@@ -178,7 +178,7 @@ export default function OneShotRunner({ templatePath, fields, title, description
         <div className="border-t border-ink/10 pt-6">
           <div className="text-xs font-mono text-ink/50 mb-2">Output {running && "(streaming…)"}</div>
           <article
-            className="prose prose-stone max-w-none prose-headings:font-mono prose-code:font-mono prose-code:text-accent"
+            className="prose max-w-none"
             dangerouslySetInnerHTML={{ __html: renderMarkdown(output || "_…_") }}
           />
         </div>

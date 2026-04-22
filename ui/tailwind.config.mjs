@@ -4,11 +4,34 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        serif: [
+          "Charter",
+          "Iowan Old Style",
+          "Palatino Linotype",
+          "Palatino",
+          "Georgia",
+          "serif",
+        ],
+        sans: [
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "sans-serif",
+        ],
+        mono: [
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Consolas",
+          "monospace",
+        ],
       },
       colors: {
         ink: "#1a1a1a",
-        paper: "#fafaf7",
+        "ink-soft": "#4a4a4a",
+        paper: "#faf8f3",
+        rule: "#e6e1d4",
         accent: "#b4522a",
       },
     },

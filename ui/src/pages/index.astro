@@ -1,18 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
-import TopicList from "../components/TopicList.tsx";
-import MarkdownView from "../components/MarkdownView.tsx";
+import Dashboard from "../components/Dashboard.tsx";
 ---
 
 <Base title="Dashboard">
-  <div class="grid md:grid-cols-3 gap-8">
-    <section class="md:col-span-1 space-y-4">
-      <h2 class="text-sm font-mono text-ink/60 uppercase tracking-wider">Curriculum</h2>
-      <TopicList client:load />
-    </section>
-
-    <section class="md:col-span-2">
-      <MarkdownView path="README.md" client:load />
-    </section>
-  </div>
+  <Dashboard client:load />
 </Base>

@@ -4,12 +4,78 @@
 
 @layer base {
   html {
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: theme("fontFamily.sans");
     background: theme("colors.paper");
     color: theme("colors.ink");
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
     min-height: 100vh;
+  }
+
+  /* Make native <details> markers disappear; we render our own rotated caret */
+  details > summary {
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+@layer components {
+  .prose {
+    @apply font-serif text-ink;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .prose :where(h1, h2, h3, h4):not(:where([class~="not-prose"] *)) {
+    @apply font-serif font-semibold text-ink tracking-tight;
+    margin-top: 1.6em;
+    margin-bottom: 0.5em;
+  }
+  .prose :where(h1):not(:where([class~="not-prose"] *)) { font-size: 1.75rem; }
+  .prose :where(h2):not(:where([class~="not-prose"] *)) { font-size: 1.35rem; }
+  .prose :where(h3):not(:where([class~="not-prose"] *)) { font-size: 1.1rem; }
+  .prose :where(p):not(:where([class~="not-prose"] *)) {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  .prose :where(ul, ol):not(:where([class~="not-prose"] *)) {
+    @apply my-2 pl-5;
+  }
+  .prose :where(li):not(:where([class~="not-prose"] *)) {
+    @apply my-1;
+  }
+  .prose :where(li > p):not(:where([class~="not-prose"] *)) {
+    margin: 0;
+  }
+  .prose :where(a):not(:where([class~="not-prose"] *)) {
+    @apply text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent;
+  }
+  .prose :where(code):not(:where([class~="not-prose"] *)) {
+    @apply font-mono text-accent bg-accent/5 px-1 py-0.5 rounded text-[0.9em];
+  }
+  .prose :where(pre):not(:where([class~="not-prose"] *)) {
+    @apply bg-ink text-paper font-mono text-xs p-4 rounded my-3 overflow-x-auto;
+  }
+  .prose :where(pre code):not(:where([class~="not-prose"] *)) {
+    @apply bg-transparent text-paper p-0;
+  }
+  .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+    @apply border-l-2 border-accent/40 pl-4 italic text-ink-soft my-3;
+  }
+  .prose :where(strong):not(:where([class~="not-prose"] *)) {
+    @apply text-ink font-semibold;
+  }
+  .prose :where(hr):not(:where([class~="not-prose"] *)) {
+    @apply border-rule my-6;
+  }
+  .prose :where(table):not(:where([class~="not-prose"] *)) {
+    @apply w-full text-sm my-4;
+  }
+  .prose :where(th, td):not(:where([class~="not-prose"] *)) {
+    @apply border-b border-rule px-3 py-2 text-left;
   }
 }

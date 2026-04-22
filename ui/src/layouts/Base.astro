@@ -14,21 +14,21 @@ const { title } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} — Learning OS</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.15/dist/typography.min.css"
-    />
   </head>
   <body class="min-h-screen">
     <ApiKeyBar client:load />
-    <nav class="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4 text-sm font-mono border-b border-ink/10">
-      <a href="/" class="font-bold hover:text-accent">learning-os</a>
-      <span class="text-ink/30">/</span>
-      <a href="/templates/roadmap-gen" class="hover:text-accent">roadmap</a>
-      <a href="/templates/socratic" class="hover:text-accent">socratic</a>
-      <a href="/templates/feynman" class="hover:text-accent">feynman</a>
+    <nav class="max-w-5xl mx-auto px-6 pt-5 pb-3 flex items-center gap-5 text-sm border-b border-rule">
+      <a href="/" class="font-serif text-lg font-semibold hover:text-accent transition-colors">
+        learnos
+      </a>
+      <div class="flex-1"></div>
+      <div class="flex gap-4 text-xs font-mono text-ink/60">
+        <a href="/templates/roadmap-gen" class="hover:text-accent transition-colors">roadmap</a>
+        <a href="/templates/socratic" class="hover:text-accent transition-colors">socratic</a>
+        <a href="/templates/feynman" class="hover:text-accent transition-colors">feynman</a>
+      </div>
     </nav>
-    <main class="max-w-5xl mx-auto px-4 py-8">
+    <main class="max-w-5xl mx-auto px-6 py-10">
       <slot />
     </main>
   </body>

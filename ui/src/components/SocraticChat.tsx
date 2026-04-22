@@ -124,13 +124,13 @@ export default function SocraticChat() {
   if (!started) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-mono">Socratic Tutor</h1>
-          <p className="text-sm text-ink/60 mt-1">
-            A first-principles guide that refuses to hand over answers. State a concept you want to pressure-test,
-            then defend your current belief about it.
+        <header>
+          <h1 className="font-serif text-3xl tracking-tight">Socratic tutor</h1>
+          <p className="text-[15px] text-ink-soft mt-2 leading-relaxed">
+            A first-principles guide that refuses to hand over answers. State a concept you want to
+            pressure-test, then defend your current belief about it.
           </p>
-        </div>
+        </header>
         <div>
           <label className="block text-xs font-mono text-ink/60 mb-1">
             Concept to pressure-test <span className="text-accent">*</span>
@@ -161,10 +161,14 @@ export default function SocraticChat() {
     <div className="space-y-4">
       <div className="flex items-baseline justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-mono">Socratic: {concept}</h1>
-          <p className="text-xs font-mono text-ink/50">
-            Escape hatches: type <code className="text-accent">direct answer please</code> or{" "}
-            <code className="text-accent">check my understanding</code>.
+          <h1 className="font-serif text-2xl tracking-tight">
+            <span className="text-ink/50">Socratic —</span> {concept}
+          </h1>
+          <p className="text-xs text-ink/50 mt-1">
+            Escape hatches: type{" "}
+            <code className="font-mono text-accent bg-accent/5 px-1 py-0.5 rounded">direct answer please</code>{" "}
+            or{" "}
+            <code className="font-mono text-accent bg-accent/5 px-1 py-0.5 rounded">check my understanding</code>.
           </p>
         </div>
         <button onClick={restart} className="text-sm underline text-ink/60 hover:text-ink">
@@ -237,7 +241,7 @@ function Bubble({ role, content, streaming }: { role: "user" | "assistant"; cont
       >
         <div className="text-[10px] font-mono opacity-60 mb-1">{isUser ? "you" : "socrates"}</div>
         <article
-          className={`prose prose-sm max-w-none ${isUser ? "prose-invert" : "prose-stone"} ${streaming ? "opacity-80" : ""}`}
+          className={`prose max-w-none text-sm ${isUser ? "[&_*]:!text-paper [&_a]:!text-paper/80 [&_code]:!bg-paper/10 [&_code]:!text-paper" : ""} ${streaming ? "opacity-80" : ""}`}
           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
         />
       </div>

@@ -32,7 +32,7 @@ export default function MarkdownView({ path, text, className }: Props) {
 
   return (
     <article
-      className={`prose prose-stone max-w-none prose-headings:font-mono prose-code:font-mono prose-code:text-accent prose-a:text-accent ${className ?? ""}`}
+      className={`prose max-w-none ${className ?? ""}`}
       dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
     />
   );
