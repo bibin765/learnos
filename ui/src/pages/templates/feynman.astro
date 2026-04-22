@@ -1,0 +1,29 @@
+---
+import Base from "../../layouts/Base.astro";
+import OneShotRunner from "../../components/OneShotRunner.tsx";
+---
+
+<Base title="Feynman Check">
+  <OneShotRunner
+    client:load
+    templatePath="templates/feynman-check.md"
+    title="Feynman Check"
+    description="Write a plain-language explanation of a concept. The auditor classifies every sentence and produces a Gap Report."
+    fields={[
+      {
+        key: "CONCEPT",
+        label: "Concept being explained",
+        placeholder: "e.g. how a Merkle tree proves inclusion",
+        required: true,
+      },
+      {
+        key: "EXPLANATION",
+        label: "Your plain-language explanation (200–400 words)",
+        placeholder: "Explain as if to a curious 14-year-old. No jargon.",
+        type: "textarea",
+        rows: 12,
+        required: true,
+      },
+    ]}
+  />
+</Base>
